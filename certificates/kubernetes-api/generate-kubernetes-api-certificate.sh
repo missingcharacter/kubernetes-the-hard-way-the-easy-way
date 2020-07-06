@@ -5,12 +5,15 @@ IFS=$'\n\t'
 COUNTRY="${1:-US}"
 CITY="${2:-Austin}"
 STATE="${3:-Texas}"
+VERSION_REGEX='([0-9]*)\.'
 
 declare -a COMPUTER_IPV4_ADDRESSES
-COMPUTER_IP_ADDRESSES=( $(hostname -I | tr '[:space:]' '\n') $(multipass list | grep -E '([0-9]|[0-9][0-9]|[0-9][0-9][0-9])\.' | awk '{ print $3 }') )
+# This works because we only have 1 master
+# logic will have to change if we have more than 1
+COMPUTER_IP_ADDRESSES=( $(hostname -I | tr '[:space:]' '\n') $(multipass list | grep -E "${VERSION_REGEX}" | awk '{ print $3 }') )
 
 for ip in "${COMPUTER_IP_ADDRESSES[@]}"; do
-  if grep -E '^([0-9]|[0-9][0-9]|[0-9][0-9][0-9])\.' <<< ${ip} > /dev/null; then
+  if grep -E "${VERSION_REGEX}" <<< "${ip}" > /dev/null; then
     COMPUTER_IPV4_ADDRESSES+=("${ip}")
   fi
 done
