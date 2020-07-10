@@ -29,9 +29,9 @@ EOF
 INTERNAL_IP="$(multipass info ${instance} | grep 'IPv4' | awk '{ print $2 }')"
 
 cfssl gencert \
-  -ca=../CA/ca.pem \
-  -ca-key=../CA/ca-key.pem \
-  -config=../CA/ca-config.json \
+  -ca=../00-Certificate-Authority/ca.pem \
+  -ca-key=../00-Certificate-Authority/ca-key.pem \
+  -config=../00-Certificate-Authority/ca-config.json \
   -hostname=${instance},${INTERNAL_IP} \
   -profile=kubernetes \
   ${instance}-csr.json | cfssljson -bare ${instance}

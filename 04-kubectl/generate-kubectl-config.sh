@@ -7,13 +7,13 @@ IFS=$'\n\t'
 KUBERNETES_VIRTUAL_IP_ADDRESS="$(multipass list | grep 'master' | awk '{ print $1 }' | xargs multipass info | grep 'IPv4' | awk '{ print $2 }')"
 
 kubectl config set-cluster kubernetes-the-hard-way \
-  --certificate-authority=../00-certificates/CA/ca.pem \
+  --certificate-authority=../00-certificates/00-Certificate-Authority/ca.pem \
   --embed-certs=true \
   --server=https://${KUBERNETES_VIRTUAL_IP_ADDRESS}:6443
 
 kubectl config set-credentials admin \
-  --client-certificate=../00-certificates/admin-client/admin.pem \
-  --client-key=../00-certificates/admin-client/admin-key.pem
+  --client-certificate=../00-certificates/01-admin-client/admin.pem \
+  --client-key=../00-certificates/01-admin-client/admin-key.pem
 
 kubectl config set-context kubernetes-the-hard-way \
   --cluster=kubernetes-the-hard-way \
