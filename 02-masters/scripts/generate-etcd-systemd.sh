@@ -2,6 +2,10 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+if ! grep 'worker-1-k8s' /etc/hosts &> /dev/null; then
+  cat multipass-hosts | sudo tee -a /etc/hosts
+fi
+
 if [[ ! -x $(command -v etcd) || ! -x $(command -v etcdctl) ]]; then
   wget -q --show-progress --https-only --timestamping \
     "https://github.com/etcd-io/etcd/releases/download/v3.4.0/etcd-v3.4.0-linux-amd64.tar.gz"

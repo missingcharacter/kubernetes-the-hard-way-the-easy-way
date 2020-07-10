@@ -6,9 +6,9 @@ COUNTRY="${1:-US}"
 CITY="${2:-Austin}"
 STATE="${3:-Texas}"
 
-cat > kube-controller-manager-csr.json <<EOF
+cat > service-account-csr.json <<EOF
 {
-  "CN": "system:kube-controller-manager",
+  "CN": "service-accounts",
   "key": {
     "algo": "rsa",
     "size": 2048
@@ -17,7 +17,7 @@ cat > kube-controller-manager-csr.json <<EOF
     {
       "C": "${COUNTRY}",
       "L": "${CITY}",
-      "O": "system:kube-controller-manager",
+      "O": "Kubernetes",
       "OU": "Kubernetes The Hard Way",
       "ST": "${STATE}"
     }
@@ -26,8 +26,8 @@ cat > kube-controller-manager-csr.json <<EOF
 EOF
 
 cfssl gencert \
-  -ca=../CA/ca.pem \
-  -ca-key=../CA/ca-key.pem \
-  -config=../CA/ca-config.json \
+  -ca=../00-Certificate-Authority/ca.pem \
+  -ca-key=../00-Certificate-Authority/ca-key.pem \
+  -config=../00-Certificate-Authority/ca-config.json \
   -profile=kubernetes \
-  kube-controller-manager-csr.json | cfssljson -bare kube-controller-manager
+  service-account-csr.json | cfssljson -bare service-account

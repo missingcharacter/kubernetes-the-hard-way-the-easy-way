@@ -2,6 +2,10 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+if ! grep 'master-k8s' /etc/hosts &> /dev/null; then
+  cat multipass-hosts | sudo tee -a /etc/hosts
+fi
+
 if [[ ! -x $(command -v socat) || ! -x $(command -v conntrack) || ! -x $(command -v ipset) ]]; then
   echo 'Installing socat conntrack and ipset'
   sudo apt update

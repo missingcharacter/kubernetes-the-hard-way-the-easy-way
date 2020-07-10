@@ -6,9 +6,9 @@ COUNTRY="${1:-US}"
 CITY="${2:-Austin}"
 STATE="${3:-Texas}"
 
-cat > service-account-csr.json <<EOF
+cat > kube-proxy-csr.json <<EOF
 {
-  "CN": "service-accounts",
+  "CN": "system:kube-proxy",
   "key": {
     "algo": "rsa",
     "size": 2048
@@ -17,7 +17,7 @@ cat > service-account-csr.json <<EOF
     {
       "C": "${COUNTRY}",
       "L": "${CITY}",
-      "O": "Kubernetes",
+      "O": "system:node-proxier",
       "OU": "Kubernetes The Hard Way",
       "ST": "${STATE}"
     }
@@ -26,8 +26,8 @@ cat > service-account-csr.json <<EOF
 EOF
 
 cfssl gencert \
-  -ca=../CA/ca.pem \
-  -ca-key=../CA/ca-key.pem \
-  -config=../CA/ca-config.json \
+  -ca=../00-Certificate-Authority/ca.pem \
+  -ca-key=../00-Certificate-Authority/ca-key.pem \
+  -config=../00-Certificate-Authority/ca-config.json \
   -profile=kubernetes \
-  service-account-csr.json | cfssljson -bare service-account
+  kube-proxy-csr.json | cfssljson -bare kube-proxy
