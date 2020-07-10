@@ -1,5 +1,16 @@
 # kubernetes-distro
 
+# Specs
+
+- Kubernetes 1.15.3
+- etcd 3.4.0
+- runc 1.0.0-rc8
+- crictl 1.15.0
+- cni plugins 0.8.2
+- containerd 1.2.9
+- cilium 1.8.1
+- coredns 1.6.2
+
 # Requirements
 
 - [tmux](https://github.com/tmux/tmux)
