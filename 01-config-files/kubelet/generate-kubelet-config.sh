@@ -8,14 +8,14 @@ KUBERNETES_VIRTUAL_IP_ADDRESS="$(multipass list | grep 'master' | awk '{ print $
 
 for instance in $(multipass list | grep 'worker' | awk '{ print $1 }'); do
   kubectl config set-cluster kubernetes-the-hard-way \
-    --certificate-authority=../../certificates/CA/ca.pem \
+    --certificate-authority=../../00-certificates/CA/ca.pem \
     --embed-certs=true \
     --server=https://${KUBERNETES_VIRTUAL_IP_ADDRESS}:6443 \
     --kubeconfig=${instance}.kubeconfig
 
   kubectl config set-credentials system:node:${instance} \
-    --client-certificate=../../certificates/kubelet-client/${instance}.pem \
-    --client-key=../../certificates/kubelet-client/${instance}-key.pem \
+    --client-certificate=../../00-certificates/kubelet-client/${instance}.pem \
+    --client-key=../../00-certificates/kubelet-client/${instance}-key.pem \
     --embed-certs=true \
     --kubeconfig=${instance}.kubeconfig
 

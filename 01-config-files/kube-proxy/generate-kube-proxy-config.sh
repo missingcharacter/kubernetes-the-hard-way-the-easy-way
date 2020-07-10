@@ -7,14 +7,14 @@ IFS=$'\n\t'
 KUBERNETES_VIRTUAL_IP_ADDRESS="$(multipass list | grep 'master' | awk '{ print $1 }' | xargs multipass info | grep 'IPv4' | awk '{ print $2 }')"
 
 kubectl config set-cluster kubernetes-the-hard-way \
-  --certificate-authority=../../certificates/CA/ca.pem \
+  --certificate-authority=../../00-certificates/CA/ca.pem \
   --embed-certs=true \
   --server=https://${KUBERNETES_VIRTUAL_IP_ADDRESS}:6443 \
   --kubeconfig=kube-proxy.kubeconfig
 
 kubectl config set-credentials system:kube-proxy \
-  --client-certificate=../../certificates/kube-proxy/kube-proxy.pem \
-  --client-key=../../certificates/kube-proxy/kube-proxy-key.pem \
+  --client-certificate=../../00-certificates/kube-proxy/kube-proxy.pem \
+  --client-key=../../00-certificates/kube-proxy/kube-proxy-key.pem \
   --embed-certs=true \
   --kubeconfig=kube-proxy.kubeconfig
 
