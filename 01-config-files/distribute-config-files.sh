@@ -8,7 +8,7 @@ function transfer_file() {
   multipass transfer -v "${FILE}" ${INSTANCE}:/home/ubuntu/${FILE##*/}
 }
 
-multipass list | egrep -v "Name|\-\-" | awk '{var=sprintf("%s\t%s.multipass",$3,$1); print var}' > multipass-hosts
+multipass list | egrep -v "Name|\-\-" | awk '{var=sprintf("%s\t%s",$3,$1); print var}' > multipass-hosts
 
 for file in $(ls */*.sh); do
   cd "$(dirname ./${file})"

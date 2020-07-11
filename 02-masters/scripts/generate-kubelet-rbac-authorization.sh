@@ -45,4 +45,4 @@ EOF
 
 echo 'the following is not related to rbac'
 
-curl --cacert ca.pem 'https://127.0.0.1:6443/version'
+curl --cacert /var/lib/kubernetes/ca.pem 'https://127.0.0.1:6443/version'

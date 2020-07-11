@@ -8,9 +8,21 @@ STATE="${3:-Texas}"
 VERSION_REGEX='([0-9]*)\.'
 
 declare -a COMPUTER_IPV4_ADDRESSES
+
+UNAME_OUTPUT=$(uname -s)
+case "${UNAME_OUTPUT}" in
+    Linux*)
+      COMPUTER_IP_ADDRESSES=( $(hostname -I | tr '[:space:]' '\n') );;
+    Darwin*)
+      COMPUTER_IP_ADDRESSES=( $(ifconfig | grep 'inet ' | grep -v '127.0.0.1' | awk '{ print $2 }') );;
+    *)
+      msg_fatal "UNKNOWN OS: ${UNAME_OUTPUT}" >&2
+      exit 1
+esac
+
 # This works because we only have 1 master
 # logic will have to change if we have more than 1
-COMPUTER_IP_ADDRESSES=( $(hostname -I | tr '[:space:]' '\n') $(multipass list | grep -E "${VERSION_REGEX}" | awk '{ print $3 }') )
+COMPUTER_IP_ADDRESSES+=( $(multipass list | grep -E "${VERSION_REGEX}" | awk '{ print $3 }') )
 
 for ip in "${COMPUTER_IP_ADDRESSES[@]}"; do
   if grep -E "${VERSION_REGEX}" <<< "${ip}" > /dev/null; then
@@ -50,6 +62,6 @@ cfssl gencert \
   -ca=../00-Certificate-Authority/ca.pem \
   -ca-key=../00-Certificate-Authority/ca-key.pem \
   -config=../00-Certificate-Authority/ca-config.json \
-  -hostname=${IPV4_ADDRESSES},127.0.0.1,${KUBERNETES_HOSTNAMES} \
+  -hostname=${IPV4_ADDRESSES},127.0.0.1,${KUBE_API_CLUSTER_IP},${KUBERNETES_HOSTNAMES} \
   -profile=kubernetes \
   kubernetes-csr.json | cfssljson -bare kubernetes
