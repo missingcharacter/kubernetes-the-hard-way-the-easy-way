@@ -2,6 +2,10 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+KUBERNETES_VERSION="${1}"
+CONTAINERD_VERSION="${2}"
+CNI_PLUGINS_VERSION="${3}"
+
 if ! grep 'master-k8s' /etc/hosts &> /dev/null; then
   cat multipass-hosts | sudo tee -a /etc/hosts
 fi
@@ -18,13 +22,11 @@ sudo swapoff -a
 if [[ ! -x $(command -v kubectl) || ! -x $(command -v kube-proxy) || ! -x $(command -v kubelet) || ! -x $(command -v runc) ]]; then
   echo 'Installing kubernetes worker binaries'
   wget -q --show-progress --https-only --timestamping \
-    https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.15.0/crictl-v1.15.0-linux-amd64.tar.gz \
-    https://github.com/opencontainers/runc/releases/download/v1.0.0-rc8/runc.amd64 \
-    https://github.com/containernetworking/plugins/releases/download/v0.8.2/cni-plugins-linux-amd64-v0.8.2.tgz \
-    https://github.com/containerd/containerd/releases/download/v1.2.9/containerd-1.2.9.linux-amd64.tar.gz \
-    https://storage.googleapis.com/kubernetes-release/release/v1.15.3/bin/linux/amd64/kubectl \
-    https://storage.googleapis.com/kubernetes-release/release/v1.15.3/bin/linux/amd64/kube-proxy \
-    https://storage.googleapis.com/kubernetes-release/release/v1.15.3/bin/linux/amd64/kubelet
+    "https://github.com/containernetworking/plugins/releases/download/v${CNI_PLUGINS_VERSION}/cni-plugins-linux-amd64-v${CNI_PLUGINS_VERSION}.tgz" \
+    "https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CONTAINERD_VERSION}.linux-amd64.tar.gz" \
+    "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubectl" \
+    "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kube-proxy" \
+    "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubelet"
 
   sudo mkdir -p \
     /etc/cni/net.d \
@@ -35,13 +37,13 @@ if [[ ! -x $(command -v kubectl) || ! -x $(command -v kube-proxy) || ! -x $(comm
     /var/run/kubernetes
 
   mkdir containerd
-  tar -xvf crictl-v1.15.0-linux-amd64.tar.gz
-  tar -xvf containerd-1.2.9.linux-amd64.tar.gz -C containerd
-  sudo tar -xvf cni-plugins-linux-amd64-v0.8.2.tgz -C /opt/cni/bin/
-  sudo mv runc.amd64 runc
+  tar -xvf "cri-containerd-${CONTAINERD_VERSION}.linux-amd64.tar.gz" -C containerd
+  mv containerd/usr/local/bin/crictl .
+  mv containerd/usr/local/sbin/runc .
+  sudo tar -xvf "cni-plugins-linux-amd64-v${CNI_PLUGINS_VERSION}.tgz" -C /opt/cni/bin/
   chmod +x crictl kubectl kube-proxy kubelet runc
   sudo mv crictl kubectl kube-proxy kubelet runc /usr/local/bin/
-  sudo mv containerd/bin/* /bin/
+  sudo mv containerd/usr/local/bin/* /bin/
 fi
 
 if [[ ! -f /etc/containerd/config.toml ]]; then

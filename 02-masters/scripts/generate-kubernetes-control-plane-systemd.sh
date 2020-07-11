@@ -2,13 +2,18 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+KUBERNETES_VERSION="${1}"
+SERVICE_CLUSTER_IP_RANGE="${2}"
+SERVICE_NODE_PORT_RANGE="${3}"
+CLUSTER_CIDR="${4}"
+
 if [[ ! -x $(command -v kube-apiserver) || ! -x $(command -v kube-controller-manager) || ! -x $(command -v kube-scheduler) || ! -x $(command -v kubectl) ]]; then
   echo 'kubernetes binaries are not available in PATH, I will download them and place them in /usr/local/bin'
   wget -q --show-progress --https-only --timestamping \
-    "https://storage.googleapis.com/kubernetes-release/release/v1.15.3/bin/linux/amd64/kube-apiserver" \
-    "https://storage.googleapis.com/kubernetes-release/release/v1.15.3/bin/linux/amd64/kube-controller-manager" \
-    "https://storage.googleapis.com/kubernetes-release/release/v1.15.3/bin/linux/amd64/kube-scheduler" \
-    "https://storage.googleapis.com/kubernetes-release/release/v1.15.3/bin/linux/amd64/kubectl"
+    "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kube-apiserver" \
+    "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kube-controller-manager" \
+    "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kube-scheduler" \
+    "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubectl"
   chmod +x kube-apiserver kube-controller-manager kube-scheduler kubectl
   sudo mv kube-apiserver kube-controller-manager kube-scheduler kubectl /usr/local/bin/
 fi
@@ -32,15 +37,6 @@ for ip in "${INTERNAL_IPS[@]}"; do
     COMPUTER_IPV4_ADDRESSES+=("${ip}")
   fi
 done
-
-# To Be Determined
-# - Service IP range: 10.32.0.0/24
-# - Node Port range: 30000-32767
-#   - mesos tasks have ports 31000-32000 udp/tcp open at the moment
-SERVICE_CLUSTER_IP_RANGE='172.17.0.0/24'
-SERVICE_NODE_PORT_RANGE='30000-32767'
-CLUSTER_CIDR='172.16.0.0/16'
-
 
 echo 'Creating kube-apiserver systemd service'
 
@@ -72,7 +68,7 @@ ExecStart=/usr/local/bin/kube-apiserver \\
   --kubelet-client-certificate=/var/lib/kubernetes/kubernetes.pem \\
   --kubelet-client-key=/var/lib/kubernetes/kubernetes-key.pem \\
   --kubelet-https=true \\
-  --runtime-config=api/all \\
+  --runtime-config=api/all=true \\
   --service-account-key-file=/var/lib/kubernetes/service-account.pem \\
   --service-cluster-ip-range=${SERVICE_CLUSTER_IP_RANGE} \\
   --service-node-port-range=${SERVICE_NODE_PORT_RANGE} \\
@@ -164,4 +160,9 @@ echo 'Will test components now:'
 echo '- `kubectl get componentstatuses --kubeconfig admin.kubeconfig`'
 echo '- if on GCP `curl -H "Host: kubernetes.default.svc.cluster.local" -i http://127.0.0.1/healthz`'
 
-kubectl get componentstatuses --kubeconfig admin.kubeconfig
+counter=0
+
+until [ $counter -eq 5 ] || kubectl get componentstatuses --kubeconfig admin.kubeconfig &> /dev/null ; do
+  echo "Kube API Server is not ready yet, will sleep for ${counter} seconds and check again"
+  sleep $(( counter++ ))
+done
