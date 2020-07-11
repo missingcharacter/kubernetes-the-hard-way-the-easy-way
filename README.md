@@ -2,12 +2,10 @@
 
 # Specs
 
-- Kubernetes 1.15.3
-- etcd 3.4.0
-- runc 1.0.0-rc8
-- crictl 1.15.0
-- cni plugins 0.8.2
-- containerd 1.2.9
+- Kubernetes 1.18.5
+- etcd 3.4.9
+- containerd 1.3.4
+- cni plugins 0.8.6
 - cilium 1.8.1
 - coredns 1.6.2
 
@@ -18,6 +16,9 @@
   - Install
     - linux: `apt install tmux` # or yum/dnf/pacman
     - mac: `brew install tmux`
+- ipcalc
+  - linux: `apt install ipcalc`
+  - mac: `brew install ipcalc`
 - [multipass](https://github.com/canonical/multipass)
   - linux: `sudo snap install multipass --classic`
   - mac: `brew cask install multipass`
@@ -34,13 +35,13 @@ sudo mv cfssl cfssljson /usr/local/bin/
 - `kubectl`
   - linux:
 ```shell
-wget https://storage.googleapis.com/kubernetes-release/release/v1.15.3/bin/linux/amd64/kubectl
+wget https://storage.googleapis.com/kubernetes-release/release/v1.18.5/bin/linux/amd64/kubectl
 chmod +x kubectl
 sudo mv kubectl /usr/local/bin/
 ```
   - mac:
 ```shell
-curl -o kubectl https://storage.googleapis.com/kubernetes-release/release/v1.15.3/bin/darwin/amd64/kubectl
+curl -o kubectl https://storage.googleapis.com/kubernetes-release/release/v1.18.5/bin/darwin/amd64/kubectl
 chmod +x kubectl
 sudo mv kubectl /usr/local/bin/
 ```
@@ -50,117 +51,37 @@ sudo mv kubectl /usr/local/bin/
 1. Create your machines:
 
 ```shell
-$ for i in 'master-k8s' 'worker-1-k8s' 'worker-2-k8s' ; do multipass launch "${i}" 20.04; done
+$ ./setup.sh
 ```
 
-2. Create and distribute the certificates:
+2. Wait a couple of minutes for cilium and coredns to start working
 
 ```shell
-$ cd 00-certificates/
-$ bash distribute-certificates.sh
-$ cd -
+$ kubectl get all --all-namespaces
+ACE     NAME                                   READY   STATUS    RESTARTS   AGE
+kube-system   pod/cilium-lc9bf                       1/1     Running   0          2m28s
+kube-system   pod/cilium-operator-657978fb5b-jp8cb   1/1     Running   0          2m28s
+kube-system   pod/cilium-s998c                       1/1     Running   0          2m26s
+kube-system   pod/coredns-589fff4ffc-5nvxb           1/1     Running   0          2m27s
+kube-system   pod/coredns-589fff4ffc-m5kgm           1/1     Running   0          2m27s
+
+NAMESPACE     NAME                 TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)                  AGE
+default       service/kubernetes   ClusterIP   172.17.0.1    <none>        443/TCP                  4m13s
+kube-system   service/kube-dns     ClusterIP   172.17.0.10   <none>        53/UDP,53/TCP,9153/TCP   2m27s
+
+NAMESPACE     NAME                    DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
+kube-system   daemonset.apps/cilium   2         2         2       2            2           <none>          2m28s
+
+NAMESPACE     NAME                              READY   UP-TO-DATE   AVAILABLE   AGE
+kube-system   deployment.apps/cilium-operator   1/1     1            1           2m28s
+kube-system   deployment.apps/coredns           2/2     2            2           2m27s
+
+NAMESPACE     NAME                                         DESIRED   CURRENT   READY   AGE
+kube-system   replicaset.apps/cilium-operator-657978fb5b   1         1         1       2m28s
+kube-system   replicaset.apps/coredns-589fff4ffc           2         2         2       2m27s
 ```
 
-3. Create and distribute config files:
-
-```shell
-$ cd 01-config-files/
-$ bash distribute-config-files.sh
-$ cd -
-```
-
-4. Transfer master/controller and worker setup scripts
-
-```shell
-$ cd 02-masters
-$ bash transfer-shell-scripts.sh
-$ cd -
-$ cd 03-workers
-$ bash transfer-shell-scripts.sh
-$ cd -
-```
-
-5. Setup the kubernetes control plane
-
-```shell
-$ multipass shell master-k8s
-
-master-k8s $ bash generate-etcd-systemd.sh
-...
-41005079efc62734, started, master-k8s, https://192.168.64.5:2380, https://192.168.64.5:2379, false
-
-master-k8s $ bash generate-kubernetes-control-plane-systemd.sh
-...
-NAME                 STATUS    MESSAGE             ERROR
-controller-manager   Healthy   ok
-scheduler            Healthy   ok
-etcd-0               Healthy   {"health":"true"}
-
-master-k8s $ bash generate-kubelet-rbac-authorization.sh
-The commands in this section will effect the entire cluster and only need to be run once from one of the controller nodes.
-clusterrole.rbac.authorization.k8s.io/system:kube-apiserver-to-kubelet created
-clusterrolebinding.rbac.authorization.k8s.io/system:kube-apiserver created
-the following is not related to rbac
-{
-  "major": "1",
-  "minor": "15",
-  "gitVersion": "v1.15.3",
-  "gitCommit": "2d3c76f9091b6bec110a5e63777c332469e0cba2",
-  "gitTreeState": "clean",
-  "buildDate": "2019-08-19T11:05:50Z",
-  "goVersion": "go1.12.9",
-  "compiler": "gc",
-  "platform": "linux/amd64"
-}
-master-k8s $ exit
-```
-
-6. Setup worker nodes (use tmux to run the commands below in parallel)
-
-```shell
-$ multipass shell worker-1-k8s
-worker-1-k8s $ bash bootstrap-workers.sh
-worker-1-k8s $ sudo systemctl status containerd kubelet kube-proxy # confirm all services are green and running
-worker-1-k8s $ exit
-```
-
-7. Setup kubectl in your computer
-
-```shell
-$ cd 04-kubectl/
-$ bash generate-kubectl-config.sh
-$ kubectl get componentstatuses
-NAME                 STATUS    MESSAGE             ERROR
-controller-manager   Healthy   ok
-scheduler            Healthy   ok
-etcd-0               Healthy   {"health":"true"}
-$ kubectl get nodes
-NAME           STATUS   ROLES    AGE     VERSION
-worker-1-k8s   Ready    <none>   7h38m   v1.15.3
-worker-2-k8s   Ready    <none>   7h38m   v1.15.3
-$ cd -
-```
-
-8. Setup networking
-
-```shell
-$ cd 05-networking/
-$ bash configure-cilium-coredns.sh
-$ kubectl run --generator=run-pod/v1 busybox --image=busybox:1.28 --command -- sleep 3600
-$ # The command below may take a while
-$ kubectl get pods -l run=busybox
-NAME      READY   STATUS    RESTARTS   AGE
-busybox   1/1     Running   0          3s
-$ POD_NAME=$(kubectl get pods -l run=busybox -o jsonpath="{.items[0].metadata.name}")
-$ kubectl exec -ti $POD_NAME -- nslookup kubernetes
-Server:    172.17.0.10
-Address 1: 172.17.0.10 kube-dns.kube-system.svc.cluster.local
-
-Name:      kubernetes
-Address 1: 172.17.0.1 kubernetes.default.svc.cluster.local
-```
-
-9. Your cluster is ready, lets verify data encryption works
+3. Your cluster is ready, lets verify data encryption works
 
 ```shell
 $ kubectl create secret generic kubernetes-the-hard-way --from-literal="mykey=mydata"
@@ -185,15 +106,15 @@ $ multipass exec master-k8s -- sudo ETCDCTL_API=3 etcdctl get --endpoints=https:
 
 The etcd key should be prefixed with `k8s:enc:aescbc:v1:key1`, which indicates the `aescbc` provider was used to encrypt the data with the `key1` encryption key.
 
-10. [Deployments](https://github.com/kelseyhightower/kubernetes-the-hard-way/blob/master/docs/13-smoke-test.md#deployments) as they are described on Kubernetes the hard way will work
+4. [Deployments](https://github.com/kelseyhightower/kubernetes-the-hard-way/blob/master/docs/13-smoke-test.md#deployments) as they are described on Kubernetes the hard way will work
 
-11. NodePort service will work in the following way (Depends on step 10)
+5. NodePort service will work in the following way (Depends on step 10)
 
 ```shell
 $ kubectl expose deployment nginx --port 80 --type NodePort
 $ NODE_PORT=$(kubectl get svc nginx --output=jsonpath='{range .spec.ports[0]}{.nodePort}')
 $ WORKER_IP=$(multipass info 'worker-1-k8s' | grep 'IPv4' | awk '{ print $2 }')
-$ curl -I http://${WORKER_IP}:${NODE_PORT}
+$ curl -I "http://${WORKER_IP}:${NODE_PORT}"
 HTTP/1.1 200 OK
 Server: nginx/1.19.0
 Date: Fri, 10 Jul 2020 04:18:52 GMT
@@ -205,7 +126,7 @@ ETag: "5ecd2f04-264"
 Accept-Ranges: bytes
 ```
 
-12. You've done a kubernetes!
+6. You've done a kubernetes!
 
 # Troubleshooting
 
