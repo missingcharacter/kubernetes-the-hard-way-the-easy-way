@@ -1,4 +1,8 @@
-# kubernetes-distro
+# Kubernetes The Hard Way The Easy Way...
+
+Creates a Single Master Kubernetes cluster using [multipass](https://github.com/canonical/multipass) and [cilium](https://docs.cilium.io/en/stable/gettingstarted/k8s-install-default/#install-cilium)
+
+All scripts are available to learn how it is built.
 
 # Specs
 
@@ -135,5 +139,6 @@ Accept-Ranges: bytes
 01-config-files/distribute-config-files.sh generates multipass-hosts and later the bootstrap scripts append it to /etc/hosts on the masters and workers
 
 # Related links
+- [kelseyhightower/kubernetes-the-hard-way](https://github.com/kelseyhightower/kubernetes-the-hard-way)
 - [multipass /etc/hosts](https://github.com/canonical/multipass/issues/853#issuecomment-630097263)
 - https://www.youtube.com/playlist?list=PLC6M23w-Wn5mA_bomV6YVB5elNw7IsHt5
