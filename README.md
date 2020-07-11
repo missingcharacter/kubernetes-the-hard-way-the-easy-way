@@ -10,7 +10,7 @@ All scripts are available to learn how it is built.
 - etcd 3.4.9
 - containerd 1.3.4
 - cni plugins 0.8.6
-- cilium 1.8.1
+- cilium 1.8.1 (and hubble)
 - coredns 1.6.2
 
 # Requirements
@@ -131,6 +131,19 @@ Accept-Ranges: bytes
 ```
 
 6. You've done a kubernetes!
+
+# How to see hubble-ui
+
+1. Forward hubble-ui port
+
+```shell
+$ POD_NAME=$(kubectl get pods -n kube-system -l k8s-app=hubble-ui -o jsonpath="{.items[0].metadata.name}")
+$ kubectl port-forward -n kube-system ${POD_NAME} 8080:12000
+```
+
+2. In your browser go to [http://localhost:8080](http://localhost:8080) -> pick a namespace with pods. Example below:
+
+![cilium-hubble-ui](./img/Cilium-Hubble-UI.png)
 
 # Troubleshooting
 
