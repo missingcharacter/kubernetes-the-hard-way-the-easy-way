@@ -87,5 +87,5 @@ cd 05-networking/
 bash configure-cilium-coredns.sh
 cd -
 
-msg_info 'Your cluster should be ready in ca couple of minutes!'
+msg_info 'Your cluster should be ready in a couple of minutes!'
 msg_info 'You can check the status running: kubectl get all --all-namespaces'
