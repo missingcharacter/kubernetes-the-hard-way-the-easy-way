@@ -163,7 +163,7 @@ echo '- if on GCP `curl -H "Host: kubernetes.default.svc.cluster.local" -i http:
 
 counter=0
 
-until [ $counter -eq 10 ] || kubectl get componentstatuses --kubeconfig admin.kubeconfig &> /dev/null ; do
+until [ $counter -eq 5 ] || kubectl get componentstatuses --kubeconfig admin.kubeconfig &> /dev/null ; do
   echo "Kube API Server is not ready yet, will sleep for ${counter} seconds and check again"
   sleep $(( counter++ ))
 done
