@@ -5,6 +5,7 @@ IFS=$'\n\t'
 KUBERNETES_VERSION="${1}"
 CONTAINERD_VERSION="${2}"
 CNI_PLUGINS_VERSION="${3}"
+DNS_CLUSTER_IP="${4}"
 
 if ! grep 'master-k8s' /etc/hosts &> /dev/null; then
   cat multipass-hosts | sudo tee -a /etc/hosts
@@ -13,7 +14,7 @@ fi
 if [[ ! -x $(command -v socat) || ! -x $(command -v conntrack) || ! -x $(command -v ipset) ]]; then
   echo 'Installing socat conntrack and ipset'
   sudo apt update
-  sudo apt-get -y install socat conntrack ipset
+  sudo apt -y install socat conntrack ipset
 fi
 
 echo 'Disabling swap'
@@ -21,12 +22,17 @@ sudo swapoff -a
 
 if [[ ! -x $(command -v kubectl) || ! -x $(command -v kube-proxy) || ! -x $(command -v kubelet) || ! -x $(command -v runc) ]]; then
   echo 'Installing kubernetes worker binaries'
-  wget -q --show-progress --https-only --timestamping \
-    "https://github.com/containernetworking/plugins/releases/download/v${CNI_PLUGINS_VERSION}/cni-plugins-linux-amd64-v${CNI_PLUGINS_VERSION}.tgz" \
-    "https://storage.googleapis.com/cri-containerd-release/cri-containerd-${CONTAINERD_VERSION}.linux-amd64.tar.gz" \
-    "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubectl" \
-    "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kube-proxy" \
-    "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubelet"
+  declare -a KUBE_WORKER_BINS
+  KUBE_WORKER_BINS=(
+    "https://github.com/containernetworking/plugins/releases/download/v${CNI_PLUGINS_VERSION}/cni-plugins-linux-amd64-v${CNI_PLUGINS_VERSION}.tgz"
+    "https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/cri-containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz"
+    "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubectl"
+    "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kube-proxy"
+    "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubelet")
+  for bin in "${KUBE_WORKER_BINS[@]}"; do
+    echo "Will try to download ${bin}"
+    wget -q --show-progress --https-only --timestamping "${bin}"
+  done
 
   sudo mkdir -p \
     /etc/cni/net.d \
@@ -37,7 +43,7 @@ if [[ ! -x $(command -v kubectl) || ! -x $(command -v kube-proxy) || ! -x $(comm
     /var/run/kubernetes
 
   mkdir containerd
-  tar -xvf "cri-containerd-${CONTAINERD_VERSION}.linux-amd64.tar.gz" -C containerd
+  tar -xvf "cri-containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz" -C containerd
   mv containerd/usr/local/bin/crictl .
   mv containerd/usr/local/sbin/runc .
   sudo tar -xvf "cni-plugins-linux-amd64-v${CNI_PLUGINS_VERSION}.tgz" -C /opt/cni/bin/
@@ -111,7 +117,7 @@ authorization:
   mode: Webhook
 clusterDomain: "cluster.local"
 clusterDNS:
-  - "172.17.0.10"
+  - "${DNS_CLUSTER_IP}"
 resolvConf: "/run/systemd/resolve/resolv.conf"
 runtimeRequestTimeout: "15m"
 tlsCertFile: "/var/lib/kubelet/${HOSTNAME}.pem"
@@ -172,5 +178,4 @@ EOF
 fi
 
 sudo systemctl daemon-reload
-sudo systemctl enable containerd kubelet kube-proxy
-sudo systemctl start containerd kubelet kube-proxy
+sudo systemctl enable --now containerd kubelet kube-proxy

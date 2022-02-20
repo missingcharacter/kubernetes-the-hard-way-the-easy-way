@@ -6,6 +6,7 @@ KUBERNETES_VERSION="${1}"
 SERVICE_CLUSTER_IP_RANGE="${2}"
 SERVICE_NODE_PORT_RANGE="${3}"
 CLUSTER_CIDR="${4}"
+KUBE_API_CLUSTER_IP="${5}"
 
 if [[ ! -x $(command -v kube-apiserver) || ! -x $(command -v kube-controller-manager) || ! -x $(command -v kube-scheduler) || ! -x $(command -v kubectl) ]]; then
   echo 'kubernetes binaries are not available in PATH, I will download them and place them in /usr/local/bin'
@@ -67,9 +68,10 @@ ExecStart=/usr/local/bin/kube-apiserver \\
   --kubelet-certificate-authority=/var/lib/kubernetes/ca.pem \\
   --kubelet-client-certificate=/var/lib/kubernetes/kubernetes.pem \\
   --kubelet-client-key=/var/lib/kubernetes/kubernetes-key.pem \\
-  --kubelet-https=true \\
   --runtime-config=api/all=true \\
+  --service-account-issuer=${KUBE_API_CLUSTER_IP} \\
   --service-account-key-file=/var/lib/kubernetes/service-account.pem \\
+  --service-account-signing-key-file=/var/lib/kubernetes/service-account-key.pem \\
   --service-cluster-ip-range=${SERVICE_CLUSTER_IP_RANGE} \\
   --service-node-port-range=${SERVICE_NODE_PORT_RANGE} \\
   --tls-cert-file=/var/lib/kubernetes/kubernetes.pem \\
@@ -126,7 +128,7 @@ echo 'Creating Kubernetes Scheduler systemd service'
 sudo mkdir -p /etc/kubernetes/config
 
 cat <<EOF | sudo tee /etc/kubernetes/config/kube-scheduler.yaml
-apiVersion: kubescheduler.config.k8s.io/v1alpha1
+apiVersion: kubescheduler.config.k8s.io/v1beta3
 kind: KubeSchedulerConfiguration
 clientConnection:
   kubeconfig: "/var/lib/kubernetes/kube-scheduler.kubeconfig"
@@ -151,8 +153,7 @@ WantedBy=multi-user.target
 EOF
 
 sudo systemctl daemon-reload
-sudo systemctl enable kube-apiserver kube-controller-manager kube-scheduler
-sudo systemctl start kube-apiserver kube-controller-manager kube-scheduler
+sudo systemctl enable --now kube-apiserver kube-controller-manager kube-scheduler
 
 echo 'If running on Google Cloud remember to check https://github.com/kelseyhightower/kubernetes-the-hard-way/blob/master/docs/08-bootstrapping-kubernetes-controllers.md#enable-http-health-checks'
 
