@@ -67,9 +67,10 @@ ExecStart=/usr/local/bin/kube-apiserver \\
   --kubelet-certificate-authority=/var/lib/kubernetes/ca.pem \\
   --kubelet-client-certificate=/var/lib/kubernetes/kubernetes.pem \\
   --kubelet-client-key=/var/lib/kubernetes/kubernetes-key.pem \\
-  --kubelet-https=true \\
   --runtime-config=api/all=true \\
+  --service-account-issuer=${KUBE_API_CLUSTER_IP} \\
   --service-account-key-file=/var/lib/kubernetes/service-account.pem \\
+  --service-account-signing-key-file=/var/lib/kubernetes/service-account-key.pem \\
   --service-cluster-ip-range=${SERVICE_CLUSTER_IP_RANGE} \\
   --service-node-port-range=${SERVICE_NODE_PORT_RANGE} \\
   --tls-cert-file=/var/lib/kubernetes/kubernetes.pem \\
@@ -126,7 +127,7 @@ echo 'Creating Kubernetes Scheduler systemd service'
 sudo mkdir -p /etc/kubernetes/config
 
 cat <<EOF | sudo tee /etc/kubernetes/config/kube-scheduler.yaml
-apiVersion: kubescheduler.config.k8s.io/v1alpha1
+apiVersion: kubescheduler.config.k8s.io/v1beta3
 kind: KubeSchedulerConfiguration
 clientConnection:
   kubeconfig: "/var/lib/kubernetes/kube-scheduler.kubeconfig"
@@ -162,7 +163,7 @@ echo '- if on GCP `curl -H "Host: kubernetes.default.svc.cluster.local" -i http:
 
 counter=0
 
-until [ $counter -eq 5 ] || kubectl get componentstatuses --kubeconfig admin.kubeconfig &> /dev/null ; do
+until [ $counter -eq 10 ] || kubectl get componentstatuses --kubeconfig admin.kubeconfig &> /dev/null ; do
   echo "Kube API Server is not ready yet, will sleep for ${counter} seconds and check again"
   sleep $(( counter++ ))
 done

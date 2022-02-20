@@ -6,12 +6,12 @@ All scripts are available to learn how it is built.
 
 # Specs
 
-- Kubernetes 1.18.5
-- etcd 3.4.9
-- containerd 1.3.4
-- cni plugins 0.8.6
-- cilium 1.8.1 (and hubble)
-- coredns 1.6.2
+- Kubernetes 1.23.4
+- etcd 3.5.2
+- containerd 1.6.0
+- cni plugins 1.0.1
+- cilium 1.11.1 (via helm chart)
+- coredns 1.8.7 (via helm chart)
 
 # Requirements
 
@@ -20,6 +20,9 @@ All scripts are available to learn how it is built.
   - Install
     - linux: `apt install tmux` # or yum/dnf/pacman
     - mac: `brew install tmux`
+- helm 3+
+  - linux: [here](https://helm.sh/docs/intro/install/)
+  - mac: `brew install helm`
 - ipcalc
   - linux: `apt install ipcalc`
   - mac: `brew install ipcalc`
@@ -154,4 +157,4 @@ $ kubectl port-forward -n kube-system ${POD_NAME} 8080:12000
 # Related links
 - [kelseyhightower/kubernetes-the-hard-way](https://github.com/kelseyhightower/kubernetes-the-hard-way)
 - [multipass /etc/hosts](https://github.com/canonical/multipass/issues/853#issuecomment-630097263)
-- https://www.youtube.com/playlist?list=PLC6M23w-Wn5mA_bomV6YVB5elNw7IsHt5
+- <https://www.youtube.com/playlist?list=PLC6M23w-Wn5mA_bomV6YVB5elNw7IsHt5>
