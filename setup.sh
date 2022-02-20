@@ -27,14 +27,14 @@ export \
   CILIUM_CHART_VERSION='1.11.1' \
   SERVICE_CLUSTER_IP_RANGE='172.17.0.0/24' \
   SERVICE_NODE_PORT_RANGE='30000-32767' \
-  CLUSTER_CIDR='172.16.0.0/16'
+  CLUSTER_CIDR='172.16.0.0/16' \
+  DNS_CLUSTER_IP='172.17.0.10'
 
 export KUBE_API_CLUSTER_IP="$(ipcalc ${SERVICE_CLUSTER_IP_RANGE} | grep 'HostMin' | awk '{ print $2 }')"
 
 # To Be Determined
 # - Service IP range: 10.32.0.0/24
 # - Node Port range: 30000-32767
-#   - mesos tasks have ports 31000-32000 udp/tcp open at the moment
 
 msg_info 'Creating multipass instances'
 
@@ -73,7 +73,8 @@ multipass exec master-k8s -- bash generate-kubelet-rbac-authorization.sh
 msg_info 'Configuring the Kubernetes workers'
 
 for i in 'worker-1-k8s' 'worker-2-k8s'; do
-  multipass exec "${i}" -- bash bootstrap-workers.sh "${KUBERNETES_VERSION}" "${CONTAINERD_VERSION}" "${CNI_PLUGINS_VERSION}"
+  msg_info "Provisioning ${i}"
+  multipass exec "${i}" -- bash bootstrap-workers.sh "${KUBERNETES_VERSION}" "${CONTAINERD_VERSION}" "${CNI_PLUGINS_VERSION}" "${DNS_CLUSTER_IP}"
 done
 
 msg_info 'Setting up kubectl to use your newly created cluster'

@@ -17,4 +17,4 @@ helm install cilium cilium/cilium --version "${CILIUM_CHART_VERSION}" --namespac
 
 echo 'Installing coredns'
 
-helm install coredns coredns/coredns --version "${COREDNS_CHART_VERSION}" --namespace kube-system
+helm install coredns coredns/coredns --version "${COREDNS_CHART_VERSION}" --namespace kube-system --set "service.clusterIP=${DNS_CLUSTER_IP}"
