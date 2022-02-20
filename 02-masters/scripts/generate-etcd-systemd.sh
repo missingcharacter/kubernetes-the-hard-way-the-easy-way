@@ -69,8 +69,7 @@ EOF
 echo 'Reloading systemd, enabling and starting etcd systemd service'
 
 sudo systemctl daemon-reload
-sudo systemctl enable etcd
-sudo systemctl start etcd
+sudo systemctl enable --now etcd
 
 echo 'Listing etcd members'
 

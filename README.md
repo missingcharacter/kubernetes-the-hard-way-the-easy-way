@@ -64,28 +64,36 @@ $ ./setup.sh
 2. Wait a couple of minutes for cilium and coredns to start working
 
 ```shell
-$ kubectl get all --all-namespaces
-ACE     NAME                                   READY   STATUS    RESTARTS   AGE
-kube-system   pod/cilium-lc9bf                       1/1     Running   0          2m28s
-kube-system   pod/cilium-operator-657978fb5b-jp8cb   1/1     Running   0          2m28s
-kube-system   pod/cilium-s998c                       1/1     Running   0          2m26s
-kube-system   pod/coredns-589fff4ffc-5nvxb           1/1     Running   0          2m27s
-kube-system   pod/coredns-589fff4ffc-m5kgm           1/1     Running   0          2m27s
+$  kubectl get all --all-namespaces
+NAMESPACE     NAME                                   READY   STATUS    RESTARTS   AGE
+kube-system   pod/cilium-25lnk                       1/1     Running   0          73s
+kube-system   pod/cilium-d8p59                       1/1     Running   0          74s
+kube-system   pod/cilium-operator-67f9b484d8-ksvzj   1/1     Running   0          74s
+kube-system   pod/cilium-operator-67f9b484d8-mqvsq   1/1     Running   0          74s
+kube-system   pod/coredns-coredns-67c645769c-klwlk   1/1     Running   0          73s
+kube-system   pod/hubble-relay-85664d47c4-ftd5n      1/1     Running   0          74s
+kube-system   pod/hubble-ui-7c6789876c-7b9mh         3/3     Running   0          74s
 
-NAMESPACE     NAME                 TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)                  AGE
-default       service/kubernetes   ClusterIP   172.17.0.1    <none>        443/TCP                  4m13s
-kube-system   service/kube-dns     ClusterIP   172.17.0.10   <none>        53/UDP,53/TCP,9153/TCP   2m27s
+NAMESPACE     NAME                      TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)         AGE
+default       service/kubernetes        ClusterIP   172.17.0.1    <none>        443/TCP         2m31s
+kube-system   service/coredns-coredns   ClusterIP   172.17.0.10   <none>        53/UDP,53/TCP   73s
+kube-system   service/hubble-relay      ClusterIP   172.17.0.83   <none>        80/TCP          74s
+kube-system   service/hubble-ui         ClusterIP   172.17.0.35   <none>        80/TCP          74s
 
 NAMESPACE     NAME                    DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
-kube-system   daemonset.apps/cilium   2         2         2       2            2           <none>          2m28s
+kube-system   daemonset.apps/cilium   2         2         2       2            2           <none>          74s
 
 NAMESPACE     NAME                              READY   UP-TO-DATE   AVAILABLE   AGE
-kube-system   deployment.apps/cilium-operator   1/1     1            1           2m28s
-kube-system   deployment.apps/coredns           2/2     2            2           2m27s
+kube-system   deployment.apps/cilium-operator   2/2     2            2           74s
+kube-system   deployment.apps/coredns-coredns   1/1     1            1           73s
+kube-system   deployment.apps/hubble-relay      1/1     1            1           74s
+kube-system   deployment.apps/hubble-ui         1/1     1            1           74s
 
 NAMESPACE     NAME                                         DESIRED   CURRENT   READY   AGE
-kube-system   replicaset.apps/cilium-operator-657978fb5b   1         1         1       2m28s
-kube-system   replicaset.apps/coredns-589fff4ffc           2         2         2       2m27s
+kube-system   replicaset.apps/cilium-operator-67f9b484d8   2         2         2       74s
+kube-system   replicaset.apps/coredns-coredns-67c645769c   1         1         1       73s
+kube-system   replicaset.apps/hubble-relay-85664d47c4      1         1         1       74s
+kube-system   replicaset.apps/hubble-ui-7c6789876c         1         1         1       74s
 ```
 
 3. Your cluster is ready, lets verify data encryption works
@@ -141,7 +149,7 @@ Accept-Ranges: bytes
 
 ```shell
 $ POD_NAME=$(kubectl get pods -n kube-system -l k8s-app=hubble-ui -o jsonpath="{.items[0].metadata.name}")
-$ kubectl port-forward -n kube-system ${POD_NAME} 8080:12000
+$ kubectl port-forward -n kube-system ${POD_NAME} 8080:8081
 ```
 
 2. In your browser go to [http://localhost:8080](http://localhost:8080) -> pick a namespace with pods. Example below:

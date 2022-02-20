@@ -66,7 +66,7 @@ cd -
 msg_info 'Configuring the Kubernetes control plane'
 
 multipass exec master-k8s -- bash generate-etcd-systemd.sh "${ETCD_VERSION}"
-multipass exec master-k8s -- bash generate-kubernetes-control-plane-systemd.sh "${KUBERNETES_VERSION}" "${SERVICE_CLUSTER_IP_RANGE}" "${SERVICE_NODE_PORT_RANGE}" "${CLUSTER_CIDR}"
+multipass exec master-k8s -- bash generate-kubernetes-control-plane-systemd.sh "${KUBERNETES_VERSION}" "${SERVICE_CLUSTER_IP_RANGE}" "${SERVICE_NODE_PORT_RANGE}" "${CLUSTER_CIDR}" "${KUBE_API_CLUSTER_IP}"
 multipass exec master-k8s -- bash generate-kubelet-rbac-authorization.sh
 
 
