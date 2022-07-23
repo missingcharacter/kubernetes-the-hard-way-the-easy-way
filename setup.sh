@@ -19,12 +19,12 @@ function check_dependencies() {
 check_dependencies
 
 export \
-  KUBERNETES_VERSION='1.23.4' \
-  ETCD_VERSION='3.5.2' \
-  CONTAINERD_VERSION='1.6.0' \
-  CNI_PLUGINS_VERSION='1.0.1' \
-  COREDNS_CHART_VERSION='1.16.7' \
-  CILIUM_CHART_VERSION='1.11.1' \
+  KUBERNETES_VERSION='1.24.3' \
+  ETCD_VERSION='3.5.4' \
+  CONTAINERD_VERSION='1.6.6' \
+  CNI_PLUGINS_VERSION='1.1.1' \
+  COREDNS_CHART_VERSION='1.19.4' \
+  CILIUM_CHART_VERSION='1.12.0' \
   SERVICE_CLUSTER_IP_RANGE='172.17.0.0/24' \
   SERVICE_NODE_PORT_RANGE='30000-32767' \
   CLUSTER_CIDR='172.16.0.0/16' \
@@ -39,7 +39,7 @@ export KUBE_API_CLUSTER_IP="$(ipcalc ${SERVICE_CLUSTER_IP_RANGE} | grep 'HostMin
 msg_info 'Creating multipass instances'
 
 for i in 'master-k8s' 'worker-1-k8s' 'worker-2-k8s' ; do
-  multipass launch --name "${i}" --cpus 2 --mem 2048M --disk 5G 20.04
+  multipass launch --name "${i}" --cpus 2 --mem 2048M --disk 5G 22.04
 done
 
 msg_info 'Creating and distributing certificates'

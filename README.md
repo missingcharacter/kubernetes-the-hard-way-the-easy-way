@@ -6,12 +6,12 @@ All scripts are available to learn how it is built.
 
 # Specs
 
-- Kubernetes 1.23.4
-- etcd 3.5.2
-- containerd 1.6.0
-- cni plugins 1.0.1
-- cilium 1.11.1 (via helm chart)
-- coredns 1.8.7 (via helm chart)
+- Kubernetes 1.24.3
+- etcd 3.5.4
+- containerd 1.6.6
+- cni plugins 1.1.1
+- cilium 1.12.0 (via helm chart)
+- coredns 1.9.3 (via helm chart)
 
 # Requirements
 

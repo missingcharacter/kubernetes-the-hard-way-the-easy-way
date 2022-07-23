@@ -98,8 +98,8 @@ Documentation=https://github.com/kubernetes/kubernetes
 
 [Service]
 ExecStart=/usr/local/bin/kube-controller-manager \\
-  --address=0.0.0.0 \\
   --allocate-node-cidrs=true \\
+  --bind-address=0.0.0.0 \\
   --cluster-cidr=${CLUSTER_CIDR} \\
   --cluster-name=kubernetes \\
   --cluster-signing-cert-file=/var/lib/kubernetes/ca.pem \\
@@ -153,7 +153,8 @@ WantedBy=multi-user.target
 EOF
 
 sudo systemctl daemon-reload
-sudo systemctl enable --now kube-apiserver kube-controller-manager kube-scheduler
+declare -a K8S_SERVICES=('kube-apiserver' 'kube-controller-manager' 'kube-scheduler')
+sudo systemctl enable --now "${K8S_SERVICES[@]}"
 
 echo 'If running on Google Cloud remember to check https://github.com/kelseyhightower/kubernetes-the-hard-way/blob/master/docs/08-bootstrapping-kubernetes-controllers.md#enable-http-health-checks'
 
@@ -166,4 +167,16 @@ counter=0
 until [ $counter -eq 5 ] || kubectl get componentstatuses --kubeconfig admin.kubeconfig &> /dev/null ; do
   echo "Kube API Server is not ready yet, will sleep for ${counter} seconds and check again"
   sleep $(( counter++ ))
+done
+
+function check_systemctl_status() {
+  local UNIT="${1}"
+  if ! grep -q 'active' <(systemctl is-active "${UNIT}"); then
+    warn "${UNIT} status is NOT: active"
+    return 1
+  fi
+}
+
+for i in "${K8S_SERVICES[@]}"; do
+  check_systemctl_status "${i}"
 done

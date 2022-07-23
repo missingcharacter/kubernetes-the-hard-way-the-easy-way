@@ -56,13 +56,18 @@ if [[ ! -f /etc/containerd/config.toml ]]; then
   echo 'Creating the containerd configuration file and systemd service'
   sudo mkdir -p /etc/containerd/
   cat << EOF | sudo tee /etc/containerd/config.toml
+version = 2
+root = "/var/lib/containerd"
+state = "/run/containerd"
+
 [plugins]
-  [plugins.cri.containerd]
-    snapshotter = "overlayfs"
-    [plugins.cri.containerd.default_runtime]
-      runtime_type = "io.containerd.runtime.v1.linux"
-      runtime_engine = "/usr/local/bin/runc"
-      runtime_root = ""
+  [plugins."io.containerd.grpc.v1.cri"]
+    [plugins."io.containerd.grpc.v1.cri".containerd]
+      default_runtime_name = "runc"
+      snapshotter = "overlayfs"
+  [plugins."io.containerd.runtime.v1.linux"]
+    runtime = "runc"
+    runtime_root = ""
 EOF
 
   cat <<EOF | sudo tee /etc/systemd/system/containerd.service
@@ -122,6 +127,7 @@ resolvConf: "/run/systemd/resolve/resolv.conf"
 runtimeRequestTimeout: "15m"
 tlsCertFile: "/var/lib/kubelet/${HOSTNAME}.pem"
 tlsPrivateKeyFile: "/var/lib/kubelet/${HOSTNAME}-key.pem"
+registerNode: true
 EOF
 
 cat <<EOF | sudo tee /etc/systemd/system/kubelet.service
@@ -134,12 +140,8 @@ Requires=containerd.service
 [Service]
 ExecStart=/usr/local/bin/kubelet \\
   --config=/var/lib/kubelet/kubelet-config.yaml \\
-  --container-runtime=remote \\
   --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock \\
-  --image-pull-progress-deadline=2m \\
   --kubeconfig=/var/lib/kubelet/kubeconfig \\
-  --network-plugin=cni \\
-  --register-node=true \\
   --v=2
 Restart=on-failure
 RestartSec=5
@@ -178,4 +180,20 @@ EOF
 fi
 
 sudo systemctl daemon-reload
-sudo systemctl enable --now containerd kubelet kube-proxy
+declare -a K8S_SERVICES=('containerd' 'kubelet' 'kube-proxy')
+sudo systemctl enable --now "${K8S_SERVICES[@]}"
+
+function check_systemctl_status() {
+  local UNIT="${1}"
+  if ! grep -q 'active' <(systemctl is-active "${UNIT}"); then
+    warn "${UNIT} status is NOT: active"
+    return 1
+  fi
+}
+
+for i in "${K8S_SERVICES[@]}"; do
+  check_systemctl_status "${i}"
+done
+
+K8S_NODE_NAME="$(hostname)"
+
