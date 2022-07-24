@@ -11,7 +11,7 @@ STATE="${3:-Texas}"
 VERSION_REGEX='([0-9]*)\.'
 
 declare -a COMPUTER_IPV4_ADDRESSES
-# This works because we only have 1 master
+# This works because we only have 1 controller
 # logic will have to change if we have more than 1
 #COMPUTER_IP_ADDRESSES=( $(hostname -I | tr '[:space:]' '\n') $(multipass list | grep -E "${VERSION_REGEX}" | awk '{ print $3 }') )
 

@@ -20,7 +20,7 @@ for instance in $(multipass list | grep 'worker' | awk '{ print $1 }'); do
   done
 done
 
-for instance in $(multipass list | grep 'master' | awk '{ print $1 }'); do
+for instance in $(multipass list | grep 'controller' | awk '{ print $1 }'); do
   for file in './00-Certificate-Authority/ca.pem' './00-Certificate-Authority/ca-key.pem' './06-kubernetes-api/kubernetes-key.pem' './06-kubernetes-api/kubernetes.pem' './07-service-account/service-account-key.pem' './07-service-account/service-account.pem'; do
     transfer_file "${file}" "${instance}"
   done

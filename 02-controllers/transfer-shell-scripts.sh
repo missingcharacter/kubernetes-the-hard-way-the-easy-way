@@ -8,7 +8,7 @@ function transfer_file() {
   multipass transfer -v "${FILE}" ${INSTANCE}:/home/ubuntu/${FILE##*/}
 }
 
-for instance in $(multipass list | grep 'master' | awk '{ print $1 }'); do
+for instance in $(multipass list | grep 'controller' | awk '{ print $1 }'); do
   for file in $(ls */*.sh); do
     transfer_file "${file}" "${instance}"
   done

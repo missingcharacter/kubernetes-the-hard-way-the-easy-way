@@ -7,7 +7,7 @@ CONTAINERD_VERSION="${2}"
 CNI_PLUGINS_VERSION="${3}"
 DNS_CLUSTER_IP="${4}"
 
-if ! grep 'master-k8s' /etc/hosts &> /dev/null; then
+if ! grep 'controller-k8s' /etc/hosts &> /dev/null; then
   cat multipass-hosts | sudo tee -a /etc/hosts
 fi
 
@@ -195,5 +195,15 @@ for i in "${K8S_SERVICES[@]}"; do
   check_systemctl_status "${i}"
 done
 
-K8S_NODE_NAME="$(hostname)"
+function get_node_status() {
+  kubectl get nodes \
+    --kubeconfig /var/lib/kubelet/kubeconfig | \
+    grep "${HOSTNAME}" | awk '{ print $2 }'
+}
 
+counter=0
+
+until [ $counter -eq 5 ] || [[ "$(get_node_status)" != 'Ready' ]]; do
+  echo "Node ${HOSTNAME} is NOT ready, will sleep for ${counter} seconds and check again"
+  sleep $(( counter++ ))
+done

@@ -38,7 +38,7 @@ export KUBE_API_CLUSTER_IP="$(ipcalc ${SERVICE_CLUSTER_IP_RANGE} | grep 'HostMin
 
 msg_info 'Creating multipass instances'
 
-for i in 'master-k8s' 'worker-1-k8s' 'worker-2-k8s' ; do
+for i in 'controller-k8s' 'worker-1-k8s' 'worker-2-k8s' ; do
   multipass launch --name "${i}" --cpus 2 --mem 2048M --disk 5G 22.04
 done
 
@@ -54,9 +54,9 @@ cd 01-config-files/
 bash distribute-config-files.sh
 cd -
 
-msg_info 'Push master and worker setup scripts'
+msg_info 'Push controller and worker setup scripts'
 
-cd 02-masters
+cd 02-controllers
 bash transfer-shell-scripts.sh
 cd -
 cd 03-workers
@@ -65,9 +65,9 @@ cd -
 
 msg_info 'Configuring the Kubernetes control plane'
 
-multipass exec master-k8s -- bash generate-etcd-systemd.sh "${ETCD_VERSION}"
-multipass exec master-k8s -- bash generate-kubernetes-control-plane-systemd.sh "${KUBERNETES_VERSION}" "${SERVICE_CLUSTER_IP_RANGE}" "${SERVICE_NODE_PORT_RANGE}" "${CLUSTER_CIDR}" "${KUBE_API_CLUSTER_IP}"
-multipass exec master-k8s -- bash generate-kubelet-rbac-authorization.sh
+multipass exec controller-k8s -- bash generate-etcd-systemd.sh "${ETCD_VERSION}"
+multipass exec controller-k8s -- bash generate-kubernetes-control-plane-systemd.sh "${KUBERNETES_VERSION}" "${SERVICE_CLUSTER_IP_RANGE}" "${SERVICE_NODE_PORT_RANGE}" "${CLUSTER_CIDR}" "${KUBE_API_CLUSTER_IP}"
+multipass exec controller-k8s -- bash generate-kubelet-rbac-authorization.sh
 
 
 msg_info 'Configuring the Kubernetes workers'

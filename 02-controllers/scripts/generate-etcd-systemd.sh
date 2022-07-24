@@ -18,6 +18,7 @@ fi
 
 if [[ ! -f /etc/etcd/kubernetes.pem || ! -f /etc/etcd/kubernetes-key.pem ]]; then
   sudo mkdir -p /etc/etcd /var/lib/etcd
+  sudo chmod -R 0700 /var/lib/etcd
   sudo cp ca.pem kubernetes-key.pem kubernetes.pem /etc/etcd/
 fi
 

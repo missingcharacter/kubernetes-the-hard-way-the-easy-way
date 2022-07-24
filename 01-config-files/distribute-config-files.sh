@@ -22,7 +22,7 @@ for instance in $(multipass list | grep 'worker' | awk '{ print $1 }'); do
   done
 done
 
-for instance in $(multipass list | grep 'master' | awk '{ print $1 }'); do
+for instance in $(multipass list | grep 'controller' | awk '{ print $1 }'); do
   for file in './admin/admin.kubeconfig' './kube-controller-manager/kube-controller-manager.kubeconfig' './kube-scheduler/kube-scheduler.kubeconfig' 'encryption/encryption-config.yaml' 'multipass-hosts'; do
     transfer_file "${file}" "${instance}"
   done

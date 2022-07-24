@@ -20,7 +20,7 @@ case "${UNAME_OUTPUT}" in
       exit 1
 esac
 
-# This works because we only have 1 master
+# This works because we only have 1 controller
 # logic will have to change if we have more than 1
 COMPUTER_IP_ADDRESSES+=( $(multipass list | grep -E "${VERSION_REGEX}" | awk '{ print $3 }') )
 
