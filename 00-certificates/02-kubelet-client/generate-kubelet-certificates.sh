@@ -7,7 +7,7 @@ CITY="${2:-Austin}"
 STATE="${3:-Texas}"
 
 for instance in $(multipass list | grep 'worker' | awk '{ print $1 }'); do
-cat > ${instance}-csr.json <<EOF
+cat > "${instance}"-csr.json <<EOF
 {
   "CN": "system:node:${instance}",
   "key": {
@@ -26,13 +26,13 @@ cat > ${instance}-csr.json <<EOF
 }
 EOF
 
-INTERNAL_IP="$(multipass info ${instance} | grep 'IPv4' | awk '{ print $2 }')"
+INTERNAL_IP="$(multipass info "${instance}" | grep 'IPv4' | awk '{ print $2 }')"
 
 cfssl gencert \
   -ca=../00-Certificate-Authority/ca.pem \
   -ca-key=../00-Certificate-Authority/ca-key.pem \
   -config=../00-Certificate-Authority/ca-config.json \
-  -hostname=${instance},${INTERNAL_IP} \
+  -hostname="${instance}","${INTERNAL_IP}" \
   -profile=kubernetes \
-  ${instance}-csr.json | cfssljson -bare ${instance}
+  "${instance}"-csr.json | cfssljson -bare "${instance}"
 done

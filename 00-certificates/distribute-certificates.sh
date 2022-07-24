@@ -1,17 +1,16 @@
 #!/usr/bin/env bash
-set -euo pipefail
-IFS=$'\n\t'
+# Enable bash's unofficial strict mode
+GITROOT=$(git rev-parse --show-toplevel)
+# shellcheck disable=SC1090,SC1091
+. "${GITROOT}"/lib/strict-mode
+# shellcheck disable=SC1090,SC1091
+. "${GITROOT}"/lib/utils
+strictMode
 
-function transfer_file() {
-  local FILE="${1}"
-  local INSTANCE=${2}
-  multipass transfer -v "${FILE}" ${INSTANCE}:/home/ubuntu/${FILE##*/}
-}
-
-for file in $(ls */*.sh); do
-  cd "$(dirname ./${file})"
-  bash ${file##*/}
-  cd -
+for file in ./*/*.sh; do
+  cd "$(dirname ./"${file}")" || exit
+  bash "${file##*/}"
+  cd - || exit
 done
 
 for instance in $(multipass list | grep 'worker' | awk '{ print $1 }'); do

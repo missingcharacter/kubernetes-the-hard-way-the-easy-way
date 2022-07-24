@@ -9,7 +9,7 @@ KUBERNETES_VIRTUAL_IP_ADDRESS="$(multipass list | grep 'controller' | awk '{ pri
 kubectl config set-cluster kubernetes-the-hard-way \
   --certificate-authority=../00-certificates/00-Certificate-Authority/ca.pem \
   --embed-certs=true \
-  --server=https://${KUBERNETES_VIRTUAL_IP_ADDRESS}:6443
+  --server=https://"${KUBERNETES_VIRTUAL_IP_ADDRESS}":6443
 
 kubectl config set-credentials admin \
   --client-certificate=../00-certificates/01-admin-client/admin.pem \

@@ -28,10 +28,13 @@ if [[ ! -d /var/lib/kubernetes || ! -f /var/lib/kubernetes/ca.pem || ! -f /var/l
     encryption-config.yaml /var/lib/kubernetes/
 fi
 
-INTERNAL_IPS=( $(hostname -I | tr '[:space:]' '\n') )
+declare -a INTERNAL_IPS=() COMPUTER_IPV4_ADDRESSES=()
+while IFS= read -r ip; do
+  if [[ -n ${ip} ]]; then
+    INTERNAL_IPS+=("${ip}")
+  fi
+done < <(hostname -I | tr '[:space:]' '\n')
 VERSION_REGEX='([0-9]*)\.'
-
-declare -a COMPUTER_IPV4_ADDRESSES
 
 for ip in "${INTERNAL_IPS[@]}"; do
   if grep -E "${VERSION_REGEX}" <<< "${ip}" > /dev/null; then
@@ -158,7 +161,9 @@ sudo systemctl enable --now "${K8S_SERVICES[@]}"
 echo 'If running on Google Cloud remember to check https://github.com/kelseyhightower/kubernetes-the-hard-way/blob/master/docs/08-bootstrapping-kubernetes-controllers.md#enable-http-health-checks'
 
 echo 'Will test components now:'
+# shellcheck disable=SC2016
 echo '- `kubectl get componentstatuses --kubeconfig admin.kubeconfig`'
+# shellcheck disable=SC2016
 echo '- if on GCP `curl -H "Host: kubernetes.default.svc.cluster.local" -i http://127.0.0.1/healthz`'
 
 counter=0

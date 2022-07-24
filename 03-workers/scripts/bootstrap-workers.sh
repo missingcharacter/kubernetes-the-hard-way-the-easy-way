@@ -8,10 +8,11 @@ CNI_PLUGINS_VERSION="${3}"
 DNS_CLUSTER_IP="${4}"
 
 if ! grep 'controller-k8s' /etc/hosts &> /dev/null; then
+  # shellcheck disable=SC2002
   cat multipass-hosts | sudo tee -a /etc/hosts
 fi
 
-if [[ ! -x $(command -v socat) || ! -x $(command -v conntrack) || ! -x $(command -v ipset) ]]; then
+if ! command -v socat &> /dev/null || ! command -v conntrack &> /dev/null || ! command -v ipset &> /dev/null; then
   echo 'Installing socat conntrack and ipset'
   sudo apt update
   sudo apt -y install socat conntrack ipset
@@ -20,10 +21,9 @@ fi
 echo 'Disabling swap'
 sudo swapoff -a
 
-if [[ ! -x $(command -v kubectl) || ! -x $(command -v kube-proxy) || ! -x $(command -v kubelet) || ! -x $(command -v runc) ]]; then
+if ! command -v kubectl &> /dev/null || ! command -v kube-proxy &> /dev/null || ! command -v kubelet &> /dev/null || ! command -v runc &> /dev/null; then
   echo 'Installing kubernetes worker binaries'
-  declare -a KUBE_WORKER_BINS
-  KUBE_WORKER_BINS=(
+  declare -a KUBE_WORKER_BINS=(
     "https://github.com/containernetworking/plugins/releases/download/v${CNI_PLUGINS_VERSION}/cni-plugins-linux-amd64-v${CNI_PLUGINS_VERSION}.tgz"
     "https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/cri-containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz"
     "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubectl"
@@ -104,8 +104,8 @@ if [[ ! -f /var/lib/kubelet/kubelet-config.yaml || ! -f /var/lib/kubelet/kubecon
 }
 EOF
 
-  sudo mv ${HOSTNAME}-key.pem ${HOSTNAME}.pem /var/lib/kubelet/
-  sudo mv ${HOSTNAME}.kubeconfig /var/lib/kubelet/kubeconfig
+  sudo mv "${HOSTNAME}"-key.pem "${HOSTNAME}".pem /var/lib/kubelet/
+  sudo mv "${HOSTNAME}".kubeconfig /var/lib/kubelet/kubeconfig
   sudo mv ca.pem /var/lib/kubernetes/
 
   cat <<EOF | sudo tee /var/lib/kubelet/kubelet-config.yaml

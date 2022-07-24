@@ -1,18 +1,33 @@
 #!/usr/bin/env bash
 # Enable bash's unofficial strict mode
 GITROOT=$(git rev-parse --show-toplevel)
-. ${GITROOT}/lib/strict-mode
+# shellcheck disable=SC1090,SC1091
+. "${GITROOT}"/lib/strict-mode
+# shellcheck disable=SC1090,SC1091
+. "${GITROOT}"/lib/utils
 strictMode
-. ${GITROOT}/lib/utils
 
-THIS_SCRIPT=$(basename $0)
-PADDING=$(printf %-${#THIS_SCRIPT}s " ")
+#THIS_SCRIPT=$(basename "${0}")
+#PADDING=$(printf %-${#THIS_SCRIPT}s " ")
 
 function check_dependencies() {
+  declare -a DEPS=(
+    'git'
+    'multipass'
+    'cfssl'
+    'cfssljson'
+    'kubectl'
+    'ipcalc'
+  )
+  declare -a MISSING=()
   # Ensure dependencies are present
-  if [[ ! -x $(command -v git) || ! -x $(command -v multipass) || ! -x $(command -v cfssl) || ! -x $(command -v cfssljson) || ! -x $(command -v kubectl) || ! -x $(command -v ipcalc) ]]; then
-      msg_fatal "[-] Dependencies unmet. Please verify that the following are installed and in the PATH: git, multipass, cfssl, cfssljson, kubectl, ipcalc" >&2
-      exit 1
+  for i in "${DEPS[@]}"; do
+    if ! command -v "${i}" &> /dev/null ; then
+      MISSING+=("${i}")
+    fi
+  done
+  if [[ ${#MISSING[@]} -ne 0 ]]; then
+    msg_fatal "[-] Dependencies unmet. Please verify that the following are installed and in the PATH: " "${MISSING[@]}"
   fi
 }
 
@@ -30,7 +45,8 @@ export \
   CLUSTER_CIDR='172.16.0.0/16' \
   DNS_CLUSTER_IP='172.17.0.10'
 
-export KUBE_API_CLUSTER_IP="$(ipcalc ${SERVICE_CLUSTER_IP_RANGE} | grep 'HostMin' | awk '{ print $2 }')"
+export KUBE_API_CLUSTER_IP
+KUBE_API_CLUSTER_IP="$(ipcalc "${SERVICE_CLUSTER_IP_RANGE}" | grep 'HostMin' | awk '{ print $2 }')"
 
 # To Be Determined
 # - Service IP range: 10.32.0.0/24
@@ -44,24 +60,24 @@ done
 
 msg_info 'Creating and distributing certificates'
 
-cd 00-certificates/
+cd 00-certificates/ || exit
 bash distribute-certificates.sh
-cd -
+cd - || exit
 
 msg_info 'Creating and distributing config files'
 
-cd 01-config-files/
+cd 01-config-files/ || exit
 bash distribute-config-files.sh
-cd -
+cd - || exit
 
 msg_info 'Push controller and worker setup scripts'
 
-cd 02-controllers
+cd 02-controllers/ || exit
 bash transfer-shell-scripts.sh
-cd -
-cd 03-workers
+cd - || exit
+cd 03-workers/ || exit
 bash transfer-shell-scripts.sh
-cd -
+cd - || exit
 
 msg_info 'Configuring the Kubernetes control plane'
 
@@ -79,16 +95,16 @@ done
 
 msg_info 'Setting up kubectl to use your newly created cluster'
 
-cd 04-kubectl/
+cd 04-kubectl/ || exit
 bash generate-kubectl-config.sh
 kubectl get componentstatuses
-cd -
+cd - || exit
 
 msg_info 'Setting up coredns and cilium'
 
-cd 05-networking/
+cd 05-networking/ || exit
 bash configure-cilium-coredns.sh
-cd -
+cd - || exit
 
 msg_info 'Your cluster should be ready in a couple of minutes!'
 msg_info 'You can check the status running: kubectl get all --all-namespaces'

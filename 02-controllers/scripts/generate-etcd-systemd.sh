@@ -5,15 +5,16 @@ IFS=$'\n\t'
 ETCD_VERSION="${1}"
 
 if ! grep 'worker-1-k8s' /etc/hosts &> /dev/null; then
+  # shellcheck disable=SC2002
   cat multipass-hosts | sudo tee -a /etc/hosts
 fi
 
 if [[ ! -x $(command -v etcd) || ! -x $(command -v etcdctl) ]]; then
   wget -q --show-progress --https-only --timestamping \
     "https://github.com/etcd-io/etcd/releases/download/v${ETCD_VERSION}/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz"
-  tar -xvf etcd-v${ETCD_VERSION}-linux-amd64.tar.gz
-  sudo mv etcd-v${ETCD_VERSION}-linux-amd64/etcd* /usr/local/bin/
-  rm -rf etcd-v${ETCD_VERSION}-linux-amd64.tar.gz etcd-v${ETCD_VERSION}-linux-amd64/
+  tar -xvf etcd-v"${ETCD_VERSION}"-linux-amd64.tar.gz
+  sudo mv etcd-v"${ETCD_VERSION}"-linux-amd64/etcd* /usr/local/bin/
+  rm -rf etcd-v"${ETCD_VERSION}"-linux-amd64.tar.gz etcd-v"${ETCD_VERSION}"-linux-amd64/
 fi
 
 if [[ ! -f /etc/etcd/kubernetes.pem || ! -f /etc/etcd/kubernetes-key.pem ]]; then
@@ -22,11 +23,15 @@ if [[ ! -f /etc/etcd/kubernetes.pem || ! -f /etc/etcd/kubernetes-key.pem ]]; the
   sudo cp ca.pem kubernetes-key.pem kubernetes.pem /etc/etcd/
 fi
 
-INTERNAL_IPS=( $(hostname -I | tr '[:space:]' '\n') )
+declare -a INTERNAL_IPS=() COMPUTER_IPV4_ADDRESSES=()
+while IFS= read -r ip; do
+  if [[ -n ${ip} ]]; then
+    INTERNAL_IPS+=("${ip}")
+  fi
+done < <(hostname -I | tr '[:space:]' '\n')
 ETCD_NAME="$(hostname -s)"
 VERSION_REGEX='([0-9]*)\.'
 
-declare -a COMPUTER_IPV4_ADDRESSES
 for ip in "${INTERNAL_IPS[@]}"; do
   if grep -E "${VERSION_REGEX}" <<< "${ip}" > /dev/null; then
     COMPUTER_IPV4_ADDRESSES+=("${ip}")

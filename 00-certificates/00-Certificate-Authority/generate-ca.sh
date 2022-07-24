@@ -3,10 +3,11 @@ set -euo pipefail
 IFS=$'\n\t'
 
 VALID_IN_YEARS="${1:-1}"
-DAYS_IN_YEAR='365'
-HOURS_IN_DAY='24'
+#DAYS_IN_YEAR='365'
+#HOURS_IN_DAY='24'
 HOURS_IN_YEAR='8760'
 
+# shellcheck disable=SC2219
 let "VALID_IN_HOURS = ${VALID_IN_YEARS} * ${HOURS_IN_YEAR}"
 
 cat > ca-config.json <<EOF

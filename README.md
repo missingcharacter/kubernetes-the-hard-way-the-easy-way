@@ -108,7 +108,10 @@ All scripts are available to learn how it is built.
 
    ```shell
    $ kubectl create secret generic kubernetes-the-hard-way --from-literal="mykey=mydata"
-   $ multipass exec controller-k8s -- sudo ETCDCTL_API=3 etcdctl get --endpoints=https://127.0.0.1:2379 --cacert=/etc/etcd/ca.pem --cert=/etc/etcd/kubernetes.pem --key=/etc/etcd/kubernetes-key.pem /registry/secrets/default/kubernetes-the-hard-way | hexdump -C
+   $ multipass exec controller-k8s -- sudo ETCDCTL_API=3 etcdctl get \
+     --endpoints=https://127.0.0.1:2379 --cacert=/etc/etcd/ca.pem \
+     --cert=/etc/etcd/kubernetes.pem --key=/etc/etcd/kubernetes-key.pem \
+     /registry/secrets/default/kubernetes-the-hard-way | hexdump -C
    00000000  2f 72 65 67 69 73 74 72  79 2f 73 65 63 72 65 74  |/registry/secret|
    00000010  73 2f 64 65 66 61 75 6c  74 2f 6b 75 62 65 72 6e  |s/default/kubern|
    00000020  65 74 65 73 2d 74 68 65  2d 68 61 72 64 2d 77 61  |etes-the-hard-wa|
