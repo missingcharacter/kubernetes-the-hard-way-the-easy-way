@@ -1,4 +1,4 @@
-# Kubernetes The Hard Way The Easy Way...
+# Kubernetes The Hard Way The Easy Way
 
 Creates a Single Controller Kubernetes cluster using
 [multipass](https://github.com/canonical/multipass)
@@ -7,7 +7,7 @@ and
 
 All scripts are available to learn how it is built.
 
-# Specs
+## Specs
 
 - Kubernetes 1.24.3
 - etcd 3.5.4
@@ -16,7 +16,7 @@ All scripts are available to learn how it is built.
 - cilium 1.12.0 (via helm chart)
 - coredns 1.9.3 (via helm chart)
 
-# Requirements
+## Requirements
 
 - [tmux](https://github.com/tmux/tmux)
   - [How to run commands in parallel with tmux](https://github.com/kelseyhightower/kubernetes-the-hard-way/blob/master/docs/01-prerequisites.md#running-commands-in-parallel-with-tmux)
@@ -34,6 +34,7 @@ All scripts are available to learn how it is built.
   - mac: `brew cask install multipass`
 - `cfssl` and `cfssljson`
   - linux:
+
     ```shell
     wget -q --show-progress --https-only --timestamping \
       https://storage.googleapis.com/kubernetes-the-hard-way/cfssl/linux/cfssl \
@@ -41,27 +42,31 @@ All scripts are available to learn how it is built.
     chmod +x cfssl cfssljson
     sudo mv cfssl cfssljson /usr/local/bin/
     ```
+
   - mac: `brew install cfssl`
 - `kubectl`
   - linux:
+
     ```shell
     wget https://storage.googleapis.com/kubernetes-release/release/v1.18.5/bin/linux/amd64/kubectl
     chmod +x kubectl
     sudo mv kubectl /usr/local/bin/
     ```
+
   - mac:
+
     ```shell
     curl -o kubectl https://storage.googleapis.com/kubernetes-release/release/v1.18.5/bin/darwin/amd64/kubectl
     chmod +x kubectl
     sudo mv kubectl /usr/local/bin/
     ```
 
-# Procedure
+## Procedure
 
 1. Create your machines:
 
    ```shell
-   $ ./setup.sh
+   ./setup.sh
    ```
 
 2. Wait a couple of minutes for cilium and coredns to start working
@@ -159,26 +164,27 @@ All scripts are available to learn how it is built.
 
 6. You've done a kubernetes!
 
-# How to see hubble-ui
+## How to see hubble-ui
 
 1. Forward hubble-ui port
 
    ```shell
-   $ POD_NAME=$(kubectl get pods -n kube-system -l k8s-app=hubble-ui -o jsonpath="{.items[0].metadata.name}")
-   $ kubectl port-forward -n kube-system ${POD_NAME} 8080:8081
+   POD_NAME=$(kubectl get pods -n kube-system -l k8s-app=hubble-ui -o jsonpath="{.items[0].metadata.name}")
+   kubectl port-forward -n kube-system ${POD_NAME} 8080:8081
    ```
 
 2. In your browser go to [http://localhost:8080](http://localhost:8080) -> pick a namespace with pods. Example below:
 
    ![cilium-hubble-ui](./img/Cilium-Hubble-UI.png)
 
-# Troubleshooting
+## Troubleshooting
 
-## All nodes should be able to reach each other via hostname
+### All nodes should be able to reach each other via hostname
 
 `01-config-files/distribute-config-files.sh` generates multipass-hosts and later the bootstrap scripts append it to `/etc/hosts` on the controllers and workers
 
-# Related links
+## Related links
+
 - [kelseyhightower/kubernetes-the-hard-way](https://github.com/kelseyhightower/kubernetes-the-hard-way)
 - [multipass /etc/hosts](https://github.com/canonical/multipass/issues/853#issuecomment-630097263)
 - <https://www.youtube.com/playlist?list=PLC6M23w-Wn5mA_bomV6YVB5elNw7IsHt5>
