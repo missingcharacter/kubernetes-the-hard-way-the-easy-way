@@ -93,6 +93,15 @@ WantedBy=multi-user.target
 EOF
 fi
 
+if [[ ! -f /etc/crictl.yaml ]]; then
+  cat <<EOF | sudo tee /etc/crictl.yaml
+runtime-endpoint: unix:///var/run/containerd/containerd.sock
+image-endpoint: unix:///var/run/containerd/containerd.sock
+timeout: 10
+debug: false
+EOF
+fi
+
 if [[ ! -f /var/lib/kubelet/kubelet-config.yaml || ! -f /var/lib/kubelet/kubeconfig || ! -f /etc/cni/net.d/99-loopback.conf ]]; then
   echo 'Creating kubelet configuration'
 
