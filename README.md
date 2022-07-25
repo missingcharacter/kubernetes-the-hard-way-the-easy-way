@@ -18,11 +18,6 @@ All scripts are available to learn how it is built.
 
 ## Requirements
 
-- [tmux](https://github.com/tmux/tmux)
-  - [How to run commands in parallel with tmux](https://github.com/kelseyhightower/kubernetes-the-hard-way/blob/master/docs/01-prerequisites.md#running-commands-in-parallel-with-tmux)
-  - Install
-    - linux: `apt install tmux` # or yum/dnf/pacman
-    - mac: `brew install tmux`
 - helm 3+
   - linux: [here](https://helm.sh/docs/intro/install/)
   - mac: `brew install helm`
@@ -107,7 +102,8 @@ All scripts are available to learn how it is built.
 3. Your cluster is ready, lets verify data encryption works
 
    ```shell
-   $ kubectl create secret generic kubernetes-the-hard-way --from-literal="mykey=mydata"
+   $ kubectl create secret \
+     generic kubernetes-the-hard-way --from-literal="mykey=mydata"
    $ multipass exec controller-k8s -- sudo ETCDCTL_API=3 etcdctl get \
      --endpoints=https://127.0.0.1:2379 --cacert=/etc/etcd/ca.pem \
      --cert=/etc/etcd/kubernetes.pem --key=/etc/etcd/kubernetes-key.pem \
@@ -130,9 +126,12 @@ All scripts are available to learn how it is built.
    000000ea
    ```
 
-   The etcd key should be prefixed with `k8s:enc:aescbc:v1:key1`, which indicates the `aescbc` provider was used to encrypt the data with the `key1` encryption key.
+   The etcd key should be prefixed with `k8s:enc:aescbc:v1:key1`, which
+   indicates the `aescbc` provider was used to encrypt the data with the `key1`
+   encryption key.
 
-4. [Deployments](https://github.com/kelseyhightower/kubernetes-the-hard-way/blob/master/docs/13-smoke-test.md#deployments) as they are described on Kubernetes the hard way will work
+4. [Deployments](https://github.com/kelseyhightower/kubernetes-the-hard-way/blob/master/docs/13-smoke-test.md#deployments)
+   as they are described on Kubernetes the hard way will work
 
    ```shell
    $ kubectl create deployment nginx --image=nginx
@@ -147,12 +146,15 @@ All scripts are available to learn how it is built.
    nginx-8f458dc5b-86vs4   1/1     Running   0          36s
    ```
 
-5. NodePort service will work in the following way (Depends on `nginx` deployment described in step 4)
+5. NodePort service will work in the following way (Depends on `nginx`
+   deployment described in step 4)
 
    ```shell
    $ kubectl expose deployment nginx --port 80 --type NodePort
-   $ NODE_PORT=$(kubectl get svc nginx --output=jsonpath='{range .spec.ports[0]}{.nodePort}')
-   $ WORKER_IP=$(multipass info 'worker-1-k8s' | grep 'IPv4' | awk '{ print $2 }')
+   $ NODE_PORT=$(kubectl get svc nginx \
+     --output=jsonpath='{range .spec.ports[0]}{.nodePort}')
+   $ WORKER_IP=$(multipass info 'worker-1-k8s' | grep 'IPv4' | \
+     awk '{ print $2 }')
    $ curl -I "http://${WORKER_IP}:${NODE_PORT}"
    HTTP/1.1 200 OK
    Server: nginx/1.19.0
@@ -172,11 +174,14 @@ All scripts are available to learn how it is built.
 1. Forward hubble-ui port
 
    ```shell
-   POD_NAME=$(kubectl get pods -n kube-system -l k8s-app=hubble-ui -o jsonpath="{.items[0].metadata.name}")
+   POD_NAME=$(kubectl get pods -n kube-system -l k8s-app=hubble-ui \
+     -o jsonpath="{.items[0].metadata.name}")
    kubectl port-forward -n kube-system ${POD_NAME} 8080:8081
    ```
 
-2. In your browser go to [http://localhost:8080](http://localhost:8080) -> pick a namespace with pods. Example below:
+2. In your browser go to
+   [http://localhost:8080](http://localhost:8080)
+   -> pick a namespace with pods. Example below:
 
    ![cilium-hubble-ui](./img/Cilium-Hubble-UI.png)
 
@@ -184,7 +189,9 @@ All scripts are available to learn how it is built.
 
 ### All nodes should be able to reach each other via hostname
 
-`01-config-files/distribute-config-files.sh` generates multipass-hosts and later the bootstrap scripts append it to `/etc/hosts` on the controllers and workers
+`01-config-files/distribute-config-files.sh` generates multipass-hosts and
+later the bootstrap scripts append it to `/etc/hosts` on the controllers and
+workers
 
 ## Related links
 
