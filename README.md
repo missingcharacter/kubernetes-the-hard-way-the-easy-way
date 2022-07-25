@@ -21,8 +21,11 @@ All scripts are available to learn how it is built.
 - helm 3+
   - linux: [here](https://helm.sh/docs/intro/install/)
   - mac: `brew install helm`
+- curl
+  - linux: `sudo apt install curl`
+  - mac: `brew install curl`
 - ipcalc
-  - linux: `apt install ipcalc`
+  - linux: `sudo apt install ipcalc`
   - mac: `brew install ipcalc`
 - [multipass](https://github.com/canonical/multipass)
   - linux: `sudo snap install multipass --classic`
