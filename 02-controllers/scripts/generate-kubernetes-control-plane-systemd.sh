@@ -2,19 +2,13 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-KUBERNETES_VERSION="${1}"
-SERVICE_CLUSTER_IP_RANGE="${2}"
-SERVICE_NODE_PORT_RANGE="${3}"
-CLUSTER_CIDR="${4}"
-KUBE_API_CLUSTER_IP="${5}"
+SERVICE_CLUSTER_IP_RANGE="${1}"
+SERVICE_NODE_PORT_RANGE="${2}"
+CLUSTER_CIDR="${3}"
+KUBE_API_CLUSTER_IP="${4}"
 
 if [[ ! -x $(command -v kube-apiserver) || ! -x $(command -v kube-controller-manager) || ! -x $(command -v kube-scheduler) || ! -x $(command -v kubectl) ]]; then
   echo 'kubernetes binaries are not available in PATH, I will download them and place them in /usr/local/bin'
-  wget -q --show-progress --https-only --timestamping \
-    "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kube-apiserver" \
-    "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kube-controller-manager" \
-    "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kube-scheduler" \
-    "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubectl"
   chmod +x kube-apiserver kube-controller-manager kube-scheduler kubectl
   sudo mv kube-apiserver kube-controller-manager kube-scheduler kubectl /usr/local/bin/
 fi

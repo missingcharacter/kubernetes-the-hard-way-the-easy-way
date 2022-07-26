@@ -2,10 +2,9 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-KUBERNETES_VERSION="${1}"
-CONTAINERD_VERSION="${2}"
-CNI_PLUGINS_VERSION="${3}"
-DNS_CLUSTER_IP="${4}"
+CONTAINERD_VERSION="${1}"
+CNI_PLUGINS_VERSION="${2}"
+DNS_CLUSTER_IP="${3}"
 
 if ! grep 'controller-k8s' /etc/hosts &> /dev/null; then
   # shellcheck disable=SC2002
@@ -23,16 +22,6 @@ sudo swapoff -a
 
 if ! command -v kubectl &> /dev/null || ! command -v kube-proxy &> /dev/null || ! command -v kubelet &> /dev/null || ! command -v runc &> /dev/null; then
   echo 'Installing kubernetes worker binaries'
-  declare -a KUBE_WORKER_BINS=(
-    "https://github.com/containernetworking/plugins/releases/download/v${CNI_PLUGINS_VERSION}/cni-plugins-linux-amd64-v${CNI_PLUGINS_VERSION}.tgz"
-    "https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/cri-containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz"
-    "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubectl"
-    "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kube-proxy"
-    "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubelet")
-  for bin in "${KUBE_WORKER_BINS[@]}"; do
-    echo "Will try to download ${bin}"
-    wget -q --show-progress --https-only --timestamping "${bin}"
-  done
 
   sudo mkdir -p \
     /etc/cni/net.d \

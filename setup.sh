@@ -82,7 +82,7 @@ cd - || exit
 msg_info 'Configuring the Kubernetes control plane'
 
 multipass exec controller-k8s -- bash generate-etcd-systemd.sh "${ETCD_VERSION}"
-multipass exec controller-k8s -- bash generate-kubernetes-control-plane-systemd.sh "${KUBERNETES_VERSION}" "${SERVICE_CLUSTER_IP_RANGE}" "${SERVICE_NODE_PORT_RANGE}" "${CLUSTER_CIDR}" "${KUBE_API_CLUSTER_IP}"
+multipass exec controller-k8s -- bash generate-kubernetes-control-plane-systemd.sh "${SERVICE_CLUSTER_IP_RANGE}" "${SERVICE_NODE_PORT_RANGE}" "${CLUSTER_CIDR}" "${KUBE_API_CLUSTER_IP}"
 multipass exec controller-k8s -- bash generate-kubelet-rbac-authorization.sh
 
 
@@ -90,7 +90,7 @@ msg_info 'Configuring the Kubernetes workers'
 
 for i in 'worker-1-k8s' 'worker-2-k8s'; do
   msg_info "Provisioning ${i}"
-  multipass exec "${i}" -- bash bootstrap-workers.sh "${KUBERNETES_VERSION}" "${CONTAINERD_VERSION}" "${CNI_PLUGINS_VERSION}" "${DNS_CLUSTER_IP}"
+  multipass exec "${i}" -- bash bootstrap-workers.sh "${CONTAINERD_VERSION}" "${CNI_PLUGINS_VERSION}" "${DNS_CLUSTER_IP}"
 done
 
 msg_info 'Setting up kubectl to use your newly created cluster'

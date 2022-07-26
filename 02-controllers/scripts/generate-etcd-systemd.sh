@@ -10,8 +10,6 @@ if ! grep 'worker-1-k8s' /etc/hosts &> /dev/null; then
 fi
 
 if [[ ! -x $(command -v etcd) || ! -x $(command -v etcdctl) ]]; then
-  wget -q --show-progress --https-only --timestamping \
-    "https://github.com/etcd-io/etcd/releases/download/v${ETCD_VERSION}/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz"
   tar -xvf etcd-v"${ETCD_VERSION}"-linux-amd64.tar.gz
   sudo mv etcd-v"${ETCD_VERSION}"-linux-amd64/etcd* /usr/local/bin/
   rm -rf etcd-v"${ETCD_VERSION}"-linux-amd64.tar.gz etcd-v"${ETCD_VERSION}"-linux-amd64/
