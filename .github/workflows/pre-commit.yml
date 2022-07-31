@@ -2,7 +2,8 @@ name: Run pre-commit
 
 on:
   push:
-    branches: [ develop, main ]
+    branches:
+      - main
   pull_request:
 
 jobs:
