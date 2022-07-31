@@ -1,0 +1,57 @@
+name: Test setup
+
+on:
+  push:
+    branches: [ develop, main ]
+  pull_request:
+
+jobs:
+  test-setup:
+    name: Run ./setup.sh
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install project dependencies
+        shell: bash
+        run: |
+          brew install cfssl curl helm ipcalc kubectl
+          brew install --cask multipass
+          hash -r
+      - name: Wait for multipass to be up
+        shell: bash
+        run: |
+          until multipass list; do
+            echo 'multipass is not running, will check again in 2 seconds'
+            sleep 2
+          done
+      - name: Confirm depdencies are available in PATH
+        shell: bash
+        run: |
+            multipass list
+            cfssl version
+            cfssljson --version
+            ipcalc --version
+            kubectl version --client
+            helm version
+      - name: Setup kubernetes
+        shell: bash
+        run: ./setup.sh
+      - name: Wait for kubernetes to be up
+        shell: bash
+        run: |
+          declare -a PODS=()
+          while IFS= read -r l; do
+            if [[ -n ${l} ]]; then
+              PODS+=("${l}")
+            fi
+          done < <(kubectl get pods -o json -A | jq -r '.items[] | .status.containerStatuses[]? | [.name] |join(":")')
+          for p in "${PODS[@]}"; do
+            until grep -q 'true' <(grep "${p}" <(kubectl get pods -o json -A | jq -r '.items[] | .status.containerStatuses[]? | [.name, .ready|tostring] |join(":")')); do
+              echo "Pod ${p} is not ready yet, will wait 2 seconds"
+              sleep 2
+            done
+          done
+      - name: Run tests
+        shell: bash
+        run: ./tests/tests.sh
