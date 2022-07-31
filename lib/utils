@@ -42,6 +42,17 @@ function get_operatingsystem() {
   esac
 }
 
+function get_ips() {
+  case "$(get_operatingsystem)" in
+    Linux)
+      hostname -I | tr '[:space:]' '\n'
+      ;;
+    MacOS)
+      ifconfig | grep 'inet ' | grep -v '127.0.0.1' | awk '{ print $2 }'
+      ;;
+  esac
+}
+
 function return_non_empty_array() {
   declare -a INPUT
   INPUT=("${@}")
