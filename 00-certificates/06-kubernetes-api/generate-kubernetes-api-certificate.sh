@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
-set -euo pipefail
-IFS=$'\n\t'
+# Enable bash's unofficial strict mode
+GITROOT=$(git rev-parse --show-toplevel)
+# shellcheck disable=SC1090,SC1091
+. "${GITROOT}"/lib/strict-mode
+# shellcheck disable=SC1090,SC1091
+. "${GITROOT}"/lib/utils
+strictMode
 
 COUNTRY="${1:-US}"
 CITY="${2:-Austin}"
@@ -9,24 +14,11 @@ VERSION_REGEX='([0-9]*)\.'
 
 declare -a COMPUTER_IPV4_ADDRESSES=() COMPUTER_IP_ADDRESSES=()
 
-UNAME_OUTPUT=$(uname -s)
-case "${UNAME_OUTPUT}" in
-    Linux*)
-      while IFS= read -r ip; do
-        if [[ -n ${ip} ]]; then
-          COMPUTER_IP_ADDRESSES+=("${ip}")
-        fi
-      done < <(hostname -I | tr '[:space:]' '\n');;
-    Darwin*)
-      while IFS= read -r ip; do
-        if [[ -n ${ip} ]]; then
-          COMPUTER_IP_ADDRESSES+=("${ip}")
-        fi
-      done < <(ifconfig | grep 'inet ' | grep -v '127.0.0.1' | awk '{ print $2 }');;
-    *)
-      msg_fatal "UNKNOWN OS: ${UNAME_OUTPUT}" >&2
-      exit 1
-esac
+while IFS= read -r ip; do
+  if [[ -n ${ip} ]]; then
+    COMPUTER_IP_ADDRESSES+=("${ip}")
+  fi
+done < <(get_ips)
 
 # This works because we only have 1 controller
 # logic will have to change if we have more than 1
@@ -41,12 +33,6 @@ for ip in "${COMPUTER_IP_ADDRESSES[@]}"; do
     COMPUTER_IPV4_ADDRESSES+=("${ip}")
   fi
 done
-
-function join_by {
-  local IFS="${1}"
-  shift
-  echo "$*"
-}
 
 IPV4_ADDRESSES=$(join_by ',' "${COMPUTER_IPV4_ADDRESSES[@]}")
 KUBERNETES_HOSTNAMES=kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster,kubernetes.svc.cluster.local
