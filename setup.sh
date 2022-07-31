@@ -55,7 +55,7 @@ KUBE_API_CLUSTER_IP="$(ipcalc "${SERVICE_CLUSTER_IP_RANGE}" | grep 'HostMin' | a
 msg_info 'Creating multipass instances'
 
 for i in 'controller-k8s' 'worker-1-k8s' 'worker-2-k8s' ; do
-  multipass launch --name "${i}" --cpus 2 --mem 2048M --disk 5G 22.04
+  multipass launch --name "${i}" --cpus 2 --mem 2048M --disk 11G 22.04
 done
 
 msg_info 'Creating and distributing certificates'
