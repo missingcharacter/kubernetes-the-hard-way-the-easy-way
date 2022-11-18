@@ -9,7 +9,7 @@ All scripts are available to learn how it is built.
 
 ## Specs
 
-- Kubernetes 1.24.3
+- Kubernetes 1.25.4
 - etcd 3.5.4
 - containerd 1.6.6
 - cni plugins 1.1.1

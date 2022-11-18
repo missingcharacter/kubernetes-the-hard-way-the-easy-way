@@ -34,7 +34,7 @@ function check_dependencies() {
 check_dependencies
 
 export \
-  KUBERNETES_VERSION='1.24.3' \
+  KUBERNETES_VERSION='1.25.4' \
   ETCD_VERSION='3.5.4' \
   CONTAINERD_VERSION='1.6.6' \
   CNI_PLUGINS_VERSION='1.1.1' \
