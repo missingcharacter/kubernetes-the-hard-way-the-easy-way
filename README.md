@@ -11,7 +11,7 @@ All scripts are available to learn how it is built.
 
 - Kubernetes 1.25.4
 - etcd 3.5.5
-- containerd 1.6.6
+- containerd 1.6.10
 - cni plugins 1.1.1
 - cilium 1.12.0 (via helm chart)
 - coredns 1.9.3 (via helm chart)
