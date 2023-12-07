@@ -1,11 +1,10 @@
+---
 name: Test setup
-
 on:
   push:
     branches:
       - main
   pull_request:
-
 jobs:
   test-setup:
     name: Run ./setup.sh
@@ -29,12 +28,12 @@ jobs:
       - name: Confirm depdencies are available in PATH
         shell: bash
         run: |
-            multipass list
-            cfssl version
-            cfssljson --version
-            ipcalc --version
-            kubectl version --client
-            helm version
+          multipass list
+          cfssl version
+          cfssljson --version
+          ipcalc --version
+          kubectl version --client
+          helm version
       - name: Setup kubernetes
         shell: bash
         run: ./setup.sh

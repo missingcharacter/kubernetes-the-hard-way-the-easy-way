@@ -1,0 +1,10 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "schedule:daily"
+  ],
+  "repositories": [
+    "missingcharacter/kubernetes-the-hard-way-the-easy-way"
+  ]
+}

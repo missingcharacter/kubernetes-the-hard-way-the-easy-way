@@ -2,6 +2,7 @@
 *.kubeconfig
 *.csr
 *.json
+!renovate.json
 01-config-files/encryption/encryption-config.yaml
 01-config-files/downloads/cni-plugins-linux-amd64-v*.tgz
 01-config-files/downloads/cri-containerd-*-linux-amd64.tar.gz

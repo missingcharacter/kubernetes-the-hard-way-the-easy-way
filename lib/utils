@@ -78,7 +78,7 @@ function retry_command() {
         return 1
       else
         echo "Retrying ...."
-        sleep $((((__backoff_delay++)) + ((__current_try++))))
+        sleep $(((__backoff_delay++) + (__current_try++)))
       fi
     done
 }
