@@ -20,7 +20,7 @@ if ! grep -q 'aescbc' <<<"${ETCD_OUTPUT=}"; then
   msg_fatal "Kubernetes secret is not encrypted"
 fi
 
-msg_info "Deplotying nginx"
+msg_info "Deploying nginx"
 kubectl create deployment nginx --image=nginx
 until grep -q 'true' <(grep 'nginx' <(kubectl get pods -o json -A | jq -r '.items[] | .status.containerStatuses[]? | [.name, .ready|tostring] |join(":")')); do
   echo "Pod nginx is not ready yet, will wait 2 seconds"
