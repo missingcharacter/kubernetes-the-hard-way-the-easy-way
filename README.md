@@ -9,12 +9,13 @@ All scripts are available to learn how it is built.
 
 ## Specs
 
-- Kubernetes 1.25.4
-- etcd 3.5.5
-- containerd 1.6.10
-- cni plugins 1.1.1
-- cilium 1.12.4 (via helm chart)
-- coredns 1.9.3 (via helm chart)
+- Ubuntu 22.04
+- Kubernetes 1.28.4
+- etcd 3.5.10
+- containerd 1.7.10
+- cni plugins 1.4.0
+- cilium 1.14.4 (via helm chart)
+- coredns 1.28.2 (via helm chart)
 
 ## Requirements
 
@@ -160,13 +161,13 @@ All scripts are available to learn how it is built.
      awk '{ print $2 }')
    $ curl -I "http://${WORKER_IP}:${NODE_PORT}"
    HTTP/1.1 200 OK
-   Server: nginx/1.19.0
-   Date: Fri, 10 Jul 2020 04:18:52 GMT
+   Server: nginx/1.25.3
+   Date: Thu, 07 Dec 2023 05:28:35 GMT
    Content-Type: text/html
-   Content-Length: 612
-   Last-Modified: Tue, 26 May 2020 15:00:20 GMT
+   Content-Length: 615
+   Last-Modified: Tue, 24 Oct 2023 13:46:47 GMT
    Connection: keep-alive
-   ETag: "5ecd2f04-264"
+   ETag: "6537cac7-267"
    Accept-Ranges: bytes
    ```
 
