@@ -4,7 +4,35 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - COPYRIGHT.md
+      - .github/*.md
+      - .github/workflows/pre-commit.yml
+      - .gitignore
+      - img/**
+      - LICENSE
+      - .markdownlint.yaml
+      - .pre-commit-config.yaml
+      - pyproject.toml
+      - README.md
+      - renovate.json
+      - .secrets.baseline
   pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - COPYRIGHT.md
+      - .github/*.md
+      - .github/workflows/pre-commit.yml
+      - .gitignore
+      - img/**
+      - LICENSE
+      - .markdownlint.yaml
+      - .pre-commit-config.yaml
+      - pyproject.toml
+      - README.md
+      - renovate.json
+      - .secrets.baseline
 jobs:
   test-setup:
     name: Run ./setup.sh
