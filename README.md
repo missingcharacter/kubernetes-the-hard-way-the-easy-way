@@ -9,13 +9,13 @@ All scripts are available to learn how it is built.
 
 ## Specs
 
-- Ubuntu 22.04
-- Kubernetes 1.28.4
-- etcd 3.5.10
-- containerd 1.7.10
-- cni plugins 1.4.0
-- cilium 1.14.4 (via helm chart)
-- coredns 1.28.2 (via helm chart)
+- Ubuntu 24.04
+- Kubernetes 1.33.2
+- etcd 3.6.1
+- containerd 2.1.3
+- cni plugins 1.7.1
+- cilium 1.17.5 (via helm chart)
+- coredns 1.43.0 (via helm chart)
 
 ## Requirements
 
