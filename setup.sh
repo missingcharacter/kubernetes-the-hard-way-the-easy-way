@@ -37,6 +37,8 @@ export \
   KUBERNETES_VERSION='1.33.2' \
   ETCD_VERSION='3.6.1' \
   CONTAINERD_VERSION='2.1.3' \
+  RUNC_VERSION='1.3.0' \
+  CRICTL_VERSION='1.33.0' \
   CNI_PLUGINS_VERSION='1.7.1' \
   COREDNS_CHART_VERSION='1.43.0' \
   CILIUM_CHART_VERSION='1.17.5' \
@@ -91,7 +93,7 @@ msg_info 'Configuring the Kubernetes workers'
 
 for i in 'worker-1-k8s' 'worker-2-k8s'; do
   msg_info "Provisioning ${i}"
-  multipass exec "${i}" -- bash bootstrap-workers.sh "${CONTAINERD_VERSION}" "${CNI_PLUGINS_VERSION}" "${DNS_CLUSTER_IP}"
+  multipass exec "${i}" -- bash bootstrap-workers.sh "${CONTAINERD_VERSION}" "${CNI_PLUGINS_VERSION}" "${DNS_CLUSTER_IP}" "${CRICTL_VERSION}"
 done
 
 msg_info 'Setting up kubectl to use your newly created cluster'

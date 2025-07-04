@@ -11,12 +11,14 @@ strictMode
 # agents
 msg_info 'Downloading kubernetes components'
 curl -fSL --remote-name-all --ssl-reqd \
-  "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kube-apiserver" \
-  "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kube-controller-manager" \
-  "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kube-scheduler" \
-  "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubectl" \
+  "https://dl.k8s.io/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kube-apiserver" \
+  "https://dl.k8s.io/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kube-controller-manager" \
+  "https://dl.k8s.io/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kube-scheduler" \
+  "https://dl.k8s.io/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubectl" \
   "https://github.com/etcd-io/etcd/releases/download/v${ETCD_VERSION}/etcd-v${ETCD_VERSION}-linux-amd64.tar.gz" \
   "https://github.com/containernetworking/plugins/releases/download/v${CNI_PLUGINS_VERSION}/cni-plugins-linux-amd64-v${CNI_PLUGINS_VERSION}.tgz" \
   "https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz" \
-  "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kube-proxy" \
-  "https://storage.googleapis.com/kubernetes-release/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubelet"
+  "https://github.com/opencontainers/runc/releases/download/v${RUNC_VERSION}/runc.amd64" \
+  "https://github.com/kubernetes-sigs/cri-tools/releases/download/v${CRICTL_VERSION}/crictl-v${CRICTL_VERSION}-linux-amd64.tar.gz" \
+  "https://dl.k8s.io/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kube-proxy" \
+  "https://dl.k8s.io/release/v${KUBERNETES_VERSION}/bin/linux/amd64/kubelet"

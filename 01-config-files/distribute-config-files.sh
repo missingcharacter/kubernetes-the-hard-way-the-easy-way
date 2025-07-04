@@ -26,7 +26,9 @@ declare -a WORKER_FILES=(
   './downloads/kube-proxy'
   './downloads/kubelet'
   "./downloads/cni-plugins-linux-amd64-v${CNI_PLUGINS_VERSION}.tgz"
-  "./downloads/cri-containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz"
+  "./downloads/containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz"
+  './downloads/runc.amd64'
+  "./downloads/crictl-v${CRICTL_VERSION}-linux-amd64.tar.gz"
 )
 
 multipass list | grep -E -v "Name|\-\-" | awk '{var=sprintf("%s\t%s",$3,$1); print var}' > multipass-hosts

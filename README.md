@@ -47,7 +47,7 @@ All scripts are available to learn how it is built.
   - linux:
 
     ```shell
-    wget https://storage.googleapis.com/kubernetes-release/release/v1.18.5/bin/linux/amd64/kubectl
+    wget https://dl.k8s.io/release/v1.33.2/bin/linux/amd64/kubectl
     chmod +x kubectl
     sudo mv kubectl /usr/local/bin/
     ```
@@ -55,7 +55,7 @@ All scripts are available to learn how it is built.
   - mac:
 
     ```shell
-    curl -o kubectl https://storage.googleapis.com/kubernetes-release/release/v1.18.5/bin/darwin/amd64/kubectl
+    curl -o kubectl https://dl.k8s.io/release/v1.33.2/bin/darwin/amd64/kubectl
     chmod +x kubectl
     sudo mv kubectl /usr/local/bin/
     ```

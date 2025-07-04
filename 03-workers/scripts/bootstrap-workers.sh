@@ -5,6 +5,7 @@ IFS=$'\n\t'
 CONTAINERD_VERSION="${1}"
 CNI_PLUGINS_VERSION="${2}"
 DNS_CLUSTER_IP="${3}"
+CRICTL_VERSION="${4}"
 
 if ! grep 'controller-k8s' /etc/hosts &> /dev/null; then
   # shellcheck disable=SC2002
@@ -32,13 +33,15 @@ if ! command -v kubectl &> /dev/null || ! command -v kube-proxy &> /dev/null || 
     /var/run/kubernetes
 
   mkdir containerd
-  tar -xvf "cri-containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz" -C containerd
-  mv containerd/usr/local/bin/crictl .
-  mv containerd/usr/local/sbin/runc .
+  tar -xvf "containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz" -C containerd
+  mkdir crictl-dir
+  tar -xvf "crictl-v${CRICTL_VERSION}-linux-amd64.tar.gz" -C crictl-dir
+  mv crictl-dir/crictl .
+  mv runc.amd64 runc
   sudo tar -xvf "cni-plugins-linux-amd64-v${CNI_PLUGINS_VERSION}.tgz" -C /opt/cni/bin/
   chmod +x crictl kubectl kube-proxy kubelet runc
   sudo mv crictl kubectl kube-proxy kubelet runc /usr/local/bin/
-  sudo mv containerd/usr/local/bin/* /bin/
+  sudo mv containerd/bin/* /bin/
 fi
 
 if [[ ! -f /etc/containerd/config.toml ]]; then
@@ -181,16 +184,12 @@ sudo systemctl daemon-reload
 declare -a K8S_SERVICES=('containerd' 'kubelet' 'kube-proxy')
 sudo systemctl enable --now "${K8S_SERVICES[@]}"
 
-function check_systemctl_status() {
-  local UNIT="${1}"
-  if ! grep -q 'active' <(systemctl is-active "${UNIT}"); then
-    warn "${UNIT} status is NOT: active"
-    return 1
-  fi
-}
-
 for i in "${K8S_SERVICES[@]}"; do
-  check_systemctl_status "${i}"
+  counter=0
+  until [ $counter -eq 5 ] || grep -q 'active' <(systemctl is-active "${i}"); do
+    echo "Will sleep for ${counter} seconds and check ${i} again"
+    sleep $(( counter++ ))
+  done
 done
 
 function get_node_status() {
