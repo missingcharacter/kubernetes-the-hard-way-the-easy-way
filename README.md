@@ -197,6 +197,11 @@ All scripts are available to learn how it is built.
 later the bootstrap scripts append it to `/etc/hosts` on the controllers and
 workers
 
+## To-Dos
+
+- Migrate from `multipass` to [`lima`](https://lima-vm.io/)
+  - [lima-actions](https://github.com/lima-vm/lima-actions?tab=readme-ov-file)
+
 ## Related links
 
 - [kelseyhightower/kubernetes-the-hard-way](https://github.com/kelseyhightower/kubernetes-the-hard-way)
