@@ -26,7 +26,7 @@ while IFS= read -r ip; do
   if [[ -n ${ip} ]]; then
     COMPUTER_IP_ADDRESSES+=("${ip}")
   fi
-done < <(multipass list | grep -E "${VERSION_REGEX}" | awk '{ print $3 }')
+done < <("${MULTIPASS_CMDS[@]}" list | grep -E "${VERSION_REGEX}" | awk '{ print $3 }')
 
 for ip in "${COMPUTER_IP_ADDRESSES[@]}"; do
   if grep -E "${VERSION_REGEX}" <<< "${ip}" > /dev/null; then

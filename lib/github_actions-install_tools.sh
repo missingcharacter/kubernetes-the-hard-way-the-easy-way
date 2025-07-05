@@ -47,6 +47,16 @@ function get_latest_github_tag() {
 }
 
 OS="$(get_os)"
+ARCH="$(get_arch)"
+
+echo "Install cfssl"
+CFSSL_VERSION="$(get_latest_github_tag 'cloudflare' 'cfssl' 'true')"
+curl -fSL --remote-name-all --ssl-reqd \
+  "https://github.com/cloudflare/cfssl/releases/download/v${CFSSL_VERSION}/cfssljson_${CFSSL_VERSION}_${OS}_${ARCH}" \
+  "https://github.com/cloudflare/cfssl/releases/download/v${CFSSL_VERSION}/cfssl_${CFSSL_VERSION}_${OS}_${ARCH}"
+chmod +x "cfssljson_${CFSSL_VERSION}_${OS}_${ARCH}" "cfssl_${CFSSL_VERSION}_${OS}_${ARCH}"
+mv "cfssljson_${CFSSL_VERSION}_${OS}_${ARCH}" /usr/local/bin/cfssljson
+mv "cfssl_${CFSSL_VERSION}_${OS}_${ARCH}" /usr/local/bin/cfssl
 
 echo "Install shellcheck"
 SHELLCHECK_VERSION="$(get_latest_github_tag 'koalaman' 'shellcheck' 'true')"
@@ -56,7 +66,7 @@ cp "shellcheck-v${SHELLCHECK_VERSION}/shellcheck" /usr/local/bin
 echo "Install actionlint"
 mkdir actionlint-download
 ACTIONLINT_VERSION="$(get_latest_github_tag 'rhysd' 'actionlint' 'true')"
-wget -qO- "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_${OS}_$(get_arch).tar.gz" | tar -C actionlint-download -xzf -
+wget -qO- "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_${OS}_${ARCH}.tar.gz" | tar -C actionlint-download -xzf -
 cp actionlint-download/actionlint /usr/local/bin
 
 hash -r

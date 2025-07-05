@@ -9,13 +9,13 @@ All scripts are available to learn how it is built.
 
 ## Specs
 
-- Ubuntu 22.04
-- Kubernetes 1.28.4
-- etcd 3.5.10
-- containerd 1.7.10
-- cni plugins 1.4.0
-- cilium 1.14.4 (via helm chart)
-- coredns 1.28.2 (via helm chart)
+- Ubuntu 24.04
+- Kubernetes 1.33.2
+- etcd 3.6.1
+- containerd 2.1.3
+- cni plugins 1.7.1
+- cilium 1.17.5 (via helm chart)
+- coredns 1.43.0 (via helm chart)
 
 ## Requirements
 
@@ -47,7 +47,7 @@ All scripts are available to learn how it is built.
   - linux:
 
     ```shell
-    wget https://storage.googleapis.com/kubernetes-release/release/v1.18.5/bin/linux/amd64/kubectl
+    wget https://dl.k8s.io/release/v1.33.2/bin/linux/amd64/kubectl
     chmod +x kubectl
     sudo mv kubectl /usr/local/bin/
     ```
@@ -55,7 +55,7 @@ All scripts are available to learn how it is built.
   - mac:
 
     ```shell
-    curl -o kubectl https://storage.googleapis.com/kubernetes-release/release/v1.18.5/bin/darwin/amd64/kubectl
+    curl -o kubectl https://dl.k8s.io/release/v1.33.2/bin/darwin/amd64/kubectl
     chmod +x kubectl
     sudo mv kubectl /usr/local/bin/
     ```
@@ -196,6 +196,11 @@ All scripts are available to learn how it is built.
 `01-config-files/distribute-config-files.sh` generates multipass-hosts and
 later the bootstrap scripts append it to `/etc/hosts` on the controllers and
 workers
+
+## To-Dos
+
+- Migrate from `multipass` to [`lima`](https://lima-vm.io/)
+  - [lima-actions](https://github.com/lima-vm/lima-actions?tab=readme-ov-file)
 
 ## Related links
 

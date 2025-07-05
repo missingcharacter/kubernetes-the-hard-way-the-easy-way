@@ -124,7 +124,7 @@ echo 'Creating Kubernetes Scheduler systemd service'
 sudo mkdir -p /etc/kubernetes/config
 
 cat <<EOF | sudo tee /etc/kubernetes/config/kube-scheduler.yaml
-apiVersion: kubescheduler.config.k8s.io/v1beta3
+apiVersion: kubescheduler.config.k8s.io/v1
 kind: KubeSchedulerConfiguration
 clientConnection:
   kubeconfig: "/var/lib/kubernetes/kube-scheduler.kubeconfig"
@@ -167,14 +167,10 @@ until [ $counter -eq 5 ] || kubectl get componentstatuses --kubeconfig admin.kub
   sleep $(( counter++ ))
 done
 
-function check_systemctl_status() {
-  local UNIT="${1}"
-  if ! grep -q 'active' <(systemctl is-active "${UNIT}"); then
-    warn "${UNIT} status is NOT: active"
-    return 1
-  fi
-}
-
 for i in "${K8S_SERVICES[@]}"; do
-  check_systemctl_status "${i}"
+  counter=0
+  until [ $counter -eq 5 ] || grep -q 'active' <(systemctl is-active "${i}"); do
+    echo "Will sleep for ${counter} seconds and check ${i} again"
+    sleep $(( counter++ ))
+  done
 done
