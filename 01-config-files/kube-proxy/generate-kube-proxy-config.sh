@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
-set -euo pipefail
-IFS=$'\n\t'
+# Enable bash's unofficial strict mode
+GITROOT=$(git rev-parse --show-toplevel)
+# shellcheck disable=SC1090,SC1091
+. "${GITROOT}"/lib/strict-mode
+# shellcheck disable=SC1090,SC1091
+. "${GITROOT}"/lib/utils
+strictMode
 
 # This works because we only have 1 controller
 # logic will have to change if we have more than 1
-KUBERNETES_VIRTUAL_IP_ADDRESS="$(multipass list | grep 'controller' | awk '{ print $1 }' | xargs multipass info | grep 'IPv4' | awk '{ print $2 }')"
+KUBERNETES_VIRTUAL_IP_ADDRESS="$("${MULTIPASS_CMDS[@]}" list | grep 'controller' | awk '{ print $1 }' | xargs "${MULTIPASS_CMDS[@]}" info | grep 'IPv4' | awk '{ print $2 }')"
 
 kubectl config set-cluster kubernetes-the-hard-way \
   --certificate-authority=../../00-certificates/00-Certificate-Authority/ca.pem \

@@ -31,7 +31,7 @@ declare -a WORKER_FILES=(
   "./downloads/crictl-v${CRICTL_VERSION}-linux-amd64.tar.gz"
 )
 
-multipass list | grep -E -v "Name|\-\-" | awk '{var=sprintf("%s\t%s",$3,$1); print var}' > multipass-hosts
+"${MULTIPASS_CMDS[@]}" list | grep -E -v "Name|\-\-" | awk '{var=sprintf("%s\t%s",$3,$1); print var}' > multipass-hosts
 
 for file in ./*/*.sh; do
   cd "$(dirname ./"${file}")" || exit
@@ -39,13 +39,13 @@ for file in ./*/*.sh; do
   cd - || exit
 done
 
-for instance in $(multipass list | grep 'controller' | awk '{ print $1 }'); do
+for instance in $("${MULTIPASS_CMDS[@]}" list | grep 'controller' | awk '{ print $1 }'); do
   for file in "${COMMON_FILES[@]}" "${CONTROLLER_FILES[@]}"; do
     transfer_file "${file}" "${instance}"
   done
 done
 
-for instance in $(multipass list | grep 'worker' | awk '{ print $1 }'); do
+for instance in $("${MULTIPASS_CMDS[@]}" list | grep 'worker' | awk '{ print $1 }'); do
   for file in "./kubelet/${instance}.kubeconfig" "${COMMON_FILES[@]}" "${WORKER_FILES[@]}"; do
     transfer_file "${file}" "${instance}"
   done

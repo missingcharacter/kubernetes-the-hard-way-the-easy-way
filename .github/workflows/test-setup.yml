@@ -36,27 +36,37 @@ on:
 jobs:
   test-setup:
     name: Run ./setup.sh
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4.3.0
+        id: install_helm
+      - uses: azure/setup-kubectl@v4
+        id: install_kubectl
       - name: Install project dependencies
         shell: bash
         run: |
-          brew install cfssl curl helm ipcalc kubectl
-          brew install --cask multipass
+          bash -x ./lib/github_actions-install_tools.sh
+          sudo apt update
+          sudo apt install -y snapd ipcalc
+          sudo snap install multipass
           hash -r
       - name: Wait for multipass to be up
         shell: bash
         run: |
-          until multipass list; do
+          until sudo multipass list; do
             echo 'multipass is not running, will check again in 2 seconds'
+            sleep 2
+          done
+          until sudo multipass launch 24.04 --name test; do
+            echo 'multipass daemon is not ready, will check again in 2 seconds'
             sleep 2
           done
       - name: Confirm depdencies are available in PATH
         shell: bash
         run: |
-          multipass list
+          sudo multipass list
           cfssl version
           cfssljson --version
           ipcalc --version

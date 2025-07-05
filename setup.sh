@@ -58,7 +58,7 @@ KUBE_API_CLUSTER_IP="$(ipcalc "${SERVICE_CLUSTER_IP_RANGE}" | grep 'HostMin' | a
 msg_info 'Creating multipass instances'
 
 for i in 'controller-k8s' 'worker-1-k8s' 'worker-2-k8s' ; do
-  multipass launch --name "${i}" --cpus 2 --memory 2048M --disk 11G "${UBUNTU_VERSION}"
+  "${MULTIPASS_CMDS[@]}" launch --name "${i}" --cpus 2 --memory 2048M --disk 11G "${UBUNTU_VERSION}"
 done
 
 msg_info 'Creating and distributing certificates'
@@ -84,16 +84,16 @@ cd - || exit
 
 msg_info 'Configuring the Kubernetes control plane'
 
-multipass exec controller-k8s -- bash generate-etcd-systemd.sh "${ETCD_VERSION}"
-multipass exec controller-k8s -- bash generate-kubernetes-control-plane-systemd.sh "${SERVICE_CLUSTER_IP_RANGE}" "${SERVICE_NODE_PORT_RANGE}" "${CLUSTER_CIDR}" "${KUBE_API_CLUSTER_IP}"
-multipass exec controller-k8s -- bash generate-kubelet-rbac-authorization.sh
+"${MULTIPASS_CMDS[@]}" exec controller-k8s -- bash generate-etcd-systemd.sh "${ETCD_VERSION}"
+"${MULTIPASS_CMDS[@]}" exec controller-k8s -- bash generate-kubernetes-control-plane-systemd.sh "${SERVICE_CLUSTER_IP_RANGE}" "${SERVICE_NODE_PORT_RANGE}" "${CLUSTER_CIDR}" "${KUBE_API_CLUSTER_IP}"
+"${MULTIPASS_CMDS[@]}" exec controller-k8s -- bash generate-kubelet-rbac-authorization.sh
 
 
 msg_info 'Configuring the Kubernetes workers'
 
 for i in 'worker-1-k8s' 'worker-2-k8s'; do
   msg_info "Provisioning ${i}"
-  multipass exec "${i}" -- bash bootstrap-workers.sh "${CONTAINERD_VERSION}" "${CNI_PLUGINS_VERSION}" "${DNS_CLUSTER_IP}" "${CRICTL_VERSION}"
+  "${MULTIPASS_CMDS[@]}" exec "${i}" -- bash bootstrap-workers.sh "${CONTAINERD_VERSION}" "${CNI_PLUGINS_VERSION}" "${DNS_CLUSTER_IP}" "${CRICTL_VERSION}"
 done
 
 msg_info 'Setting up kubectl to use your newly created cluster'
