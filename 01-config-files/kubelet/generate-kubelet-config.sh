@@ -9,13 +9,11 @@ strictMode
 
 # This works because we only have 1 controller
 # logic will have to change if we have more than 1
-KUBERNETES_VIRTUAL_IP_ADDRESS="$("${MULTIPASS_CMDS[@]}" list | grep 'controller' | awk '{ print $1 }' | xargs "${MULTIPASS_CMDS[@]}" info | grep 'IPv4' | awk '{ print $2 }')"
-
-for instance in $("${MULTIPASS_CMDS[@]}" list | grep 'worker' | awk '{ print $1 }'); do
+for instance in $(limactl list -q | grep 'worker'); do
   kubectl config set-cluster kubernetes-the-hard-way \
     --certificate-authority=../../00-certificates/00-Certificate-Authority/ca.pem \
     --embed-certs=true \
-    --server=https://"${KUBERNETES_VIRTUAL_IP_ADDRESS}":6443 \
+    --server=https://lima-controller-k8s.internal:6443 \
     --kubeconfig="${instance}".kubeconfig
 
   kubectl config set-credentials system:node:"${instance}" \

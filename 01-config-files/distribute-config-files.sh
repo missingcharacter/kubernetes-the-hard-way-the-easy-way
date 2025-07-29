@@ -9,7 +9,7 @@ strictMode
 
 declare -a COMMON_FILES=(
   './downloads/kubectl'
-  'multipass-hosts'
+  'limactl-hosts'
 )
 declare -a CONTROLLER_FILES=(
   './admin/admin.kubeconfig'
@@ -26,12 +26,14 @@ declare -a WORKER_FILES=(
   './downloads/kube-proxy'
   './downloads/kubelet'
   "./downloads/cni-plugins-linux-amd64-v${CNI_PLUGINS_VERSION}.tgz"
-  "./downloads/containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz"
-  './downloads/runc.amd64'
   "./downloads/crictl-v${CRICTL_VERSION}-linux-amd64.tar.gz"
 )
 
-"${MULTIPASS_CMDS[@]}" list | grep -E -v "Name|\-\-" | awk '{var=sprintf("%s\t%s",$3,$1); print var}' > multipass-hosts
+truncate --size 0 limactl-hosts
+for instance in $(limactl list -q); do
+  ip="$(limactl shell "${instance}" hostname -I)"
+  echo "${ip} lima-${instance}" >> limactl-hosts
+done
 
 for file in ./*/*.sh; do
   cd "$(dirname ./"${file}")" || exit
@@ -39,16 +41,16 @@ for file in ./*/*.sh; do
   cd - || exit
 done
 
-for instance in $("${MULTIPASS_CMDS[@]}" list | grep 'controller' | awk '{ print $1 }'); do
+for instance in $(limactl list -q | grep 'controller'); do
   for file in "${COMMON_FILES[@]}" "${CONTROLLER_FILES[@]}"; do
     transfer_file "${file}" "${instance}"
   done
 done
 
-for instance in $("${MULTIPASS_CMDS[@]}" list | grep 'worker' | awk '{ print $1 }'); do
+for instance in $(limactl list -q | grep 'worker'); do
   for file in "./kubelet/${instance}.kubeconfig" "${COMMON_FILES[@]}" "${WORKER_FILES[@]}"; do
     transfer_file "${file}" "${instance}"
   done
 done
 
-rm -f multipass-hosts
+rm -f limactl-hosts

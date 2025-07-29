@@ -1,7 +1,7 @@
 # Kubernetes The Hard Way The Easy Way
 
 Creates a Single Controller Kubernetes cluster using
-[multipass](https://github.com/canonical/multipass)
+[limactl](https://github.com/lima-vm/lima)
 and
 [cilium](https://docs.cilium.io/en/stable/gettingstarted/k8s-install-default/#install-cilium)
 
@@ -12,7 +12,7 @@ All scripts are available to learn how it is built.
 - Ubuntu 24.04
 - Kubernetes 1.33.2
 - etcd 3.6.1
-- containerd 2.1.3
+- containerd 2.1.3 (via limactl VM)
 - cni plugins 1.7.1
 - cilium 1.17.5 (via helm chart)
 - coredns 1.43.0 (via helm chart)
@@ -28,9 +28,9 @@ All scripts are available to learn how it is built.
 - ipcalc
   - linux: `sudo apt install ipcalc`
   - mac: `brew install ipcalc`
-- [multipass](https://github.com/canonical/multipass)
-  - linux: `sudo snap install multipass --classic`
-  - mac: `brew cask install multipass`
+- [limactl](https://github.com/lima-vm/lima)
+  - linux: [Check releases](https://github.com/lima-vm/lima/releases)
+  - mac: `brew install lima`
 - `cfssl` and `cfssljson`
   - linux:
 
@@ -108,7 +108,7 @@ All scripts are available to learn how it is built.
    ```shell
    $ kubectl create secret \
      generic kubernetes-the-hard-way --from-literal="mykey=mydata"
-   $ multipass exec controller-k8s -- sudo ETCDCTL_API=3 etcdctl get \
+   $ limactl shell controller-k8s sudo etcdctl get \
      --endpoints=https://127.0.0.1:2379 --cacert=/etc/etcd/ca.pem \
      --cert=/etc/etcd/kubernetes.pem --key=/etc/etcd/kubernetes-key.pem \
      /registry/secrets/default/kubernetes-the-hard-way | hexdump -C
@@ -154,12 +154,10 @@ All scripts are available to learn how it is built.
    deployment described in step 4)
 
    ```shell
-   $ kubectl expose deployment nginx --port 80 --type NodePort
-   $ NODE_PORT=$(kubectl get svc nginx \
-     --output=jsonpath='{range .spec.ports[0]}{.nodePort}')
-   $ WORKER_IP=$(multipass info 'worker-1-k8s' | grep 'IPv4' | \
-     awk '{ print $2 }')
-   $ curl -I "http://${WORKER_IP}:${NODE_PORT}"
+   $ POD_NAME=$(kubectl get pods -n default -l app=nginx \
+     -o jsonpath="{.items[0].metadata.name}")
+   $ kubectl port-forward pod/"${POD_NAME}" 9090:80 &
+   $ curl -I http://localhost:9090
    HTTP/1.1 200 OK
    Server: nginx/1.25.3
    Date: Thu, 07 Dec 2023 05:28:35 GMT
@@ -193,17 +191,11 @@ All scripts are available to learn how it is built.
 
 ### All nodes should be able to reach each other via hostname
 
-`01-config-files/distribute-config-files.sh` generates multipass-hosts and
+`01-config-files/distribute-config-files.sh` generates `limactl-hosts` and
 later the bootstrap scripts append it to `/etc/hosts` on the controllers and
 workers
-
-## To-Dos
-
-- Migrate from `multipass` to [`lima`](https://lima-vm.io/)
-  - [lima-actions](https://github.com/lima-vm/lima-actions?tab=readme-ov-file)
 
 ## Related links
 
 - [kelseyhightower/kubernetes-the-hard-way](https://github.com/kelseyhightower/kubernetes-the-hard-way)
-- [multipass /etc/hosts](https://github.com/canonical/multipass/issues/853#issuecomment-630097263)
 - <https://www.youtube.com/playlist?list=PLC6M23w-Wn5mA_bomV6YVB5elNw7IsHt5>

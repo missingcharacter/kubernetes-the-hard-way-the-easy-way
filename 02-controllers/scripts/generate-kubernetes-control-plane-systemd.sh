@@ -7,6 +7,9 @@ SERVICE_NODE_PORT_RANGE="${2}"
 CLUSTER_CIDR="${3}"
 KUBE_API_CLUSTER_IP="${4}"
 
+# Changing directory to ${HOME}
+cd || exit 1
+
 if [[ ! -x $(command -v kube-apiserver) || ! -x $(command -v kube-controller-manager) || ! -x $(command -v kube-scheduler) || ! -x $(command -v kubectl) ]]; then
   echo 'kubernetes binaries are not available in PATH, I will download them and place them in /usr/local/bin'
   chmod +x kube-apiserver kube-controller-manager kube-scheduler kubectl

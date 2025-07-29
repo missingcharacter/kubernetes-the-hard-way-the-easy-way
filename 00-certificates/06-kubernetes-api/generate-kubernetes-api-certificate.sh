@@ -14,19 +14,13 @@ VERSION_REGEX='([0-9]*)\.'
 
 declare -a COMPUTER_IPV4_ADDRESSES=() COMPUTER_IP_ADDRESSES=()
 
-while IFS= read -r ip; do
-  if [[ -n ${ip} ]]; then
-    COMPUTER_IP_ADDRESSES+=("${ip}")
-  fi
-done < <(get_ips)
-
 # This works because we only have 1 controller
 # logic will have to change if we have more than 1
 while IFS= read -r ip; do
   if [[ -n ${ip} ]]; then
-    COMPUTER_IP_ADDRESSES+=("${ip}")
+    COMPUTER_IP_ADDRESSES+=("$(echo "${ip}" | xargs)")
   fi
-done < <("${MULTIPASS_CMDS[@]}" list | grep -E "${VERSION_REGEX}" | awk '{ print $3 }')
+done < <(limactl list -q | xargs -I{} limactl shell {} hostname -I)
 
 for ip in "${COMPUTER_IP_ADDRESSES[@]}"; do
   if grep -E "${VERSION_REGEX}" <<< "${ip}" > /dev/null; then
@@ -60,6 +54,6 @@ cfssl gencert \
   -ca=../00-Certificate-Authority/ca.pem \
   -ca-key=../00-Certificate-Authority/ca-key.pem \
   -config=../00-Certificate-Authority/ca-config.json \
-  -hostname="${IPV4_ADDRESSES}",127.0.0.1,"${KUBE_API_CLUSTER_IP}","${KUBERNETES_HOSTNAMES}" \
+  -hostname="${IPV4_ADDRESSES}",127.0.0.1,"${KUBE_API_CLUSTER_IP}","${KUBERNETES_HOSTNAMES}",lima-controller-k8s.internal \
   -profile=kubernetes \
   kubernetes-csr.json | cfssljson -bare kubernetes

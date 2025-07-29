@@ -4,6 +4,9 @@ IFS=$'\n\t'
 
 echo 'The commands in this section will effect the entire cluster and only need to be run once from one of the controller nodes.'
 
+# Changing directory to ${HOME}
+cd || exit 1
+
 cat <<EOF | kubectl apply --kubeconfig admin.kubeconfig -f -
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole

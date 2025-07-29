@@ -2,14 +2,16 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-CONTAINERD_VERSION="${1}"
-CNI_PLUGINS_VERSION="${2}"
-DNS_CLUSTER_IP="${3}"
-CRICTL_VERSION="${4}"
+CNI_PLUGINS_VERSION="${1}"
+DNS_CLUSTER_IP="${2}"
+CRICTL_VERSION="${3}"
+
+# Changing directory to ${HOME}
+cd || exit 1
 
 if ! grep 'controller-k8s' /etc/hosts &> /dev/null; then
   # shellcheck disable=SC2002
-  cat multipass-hosts | sudo tee -a /etc/hosts
+  cat limactl-hosts | sudo tee -a /etc/hosts
 fi
 
 if ! command -v socat &> /dev/null || ! command -v conntrack &> /dev/null || ! command -v ipset &> /dev/null; then
@@ -21,7 +23,7 @@ fi
 echo 'Disabling swap'
 sudo swapoff -a
 
-if ! command -v kubectl &> /dev/null || ! command -v kube-proxy &> /dev/null || ! command -v kubelet &> /dev/null || ! command -v runc &> /dev/null; then
+if ! command -v kubectl &> /dev/null || ! command -v kube-proxy &> /dev/null || ! command -v kubelet &> /dev/null; then
   echo 'Installing kubernetes worker binaries'
 
   sudo mkdir -p \
@@ -32,16 +34,12 @@ if ! command -v kubectl &> /dev/null || ! command -v kube-proxy &> /dev/null || 
     /var/lib/kubernetes \
     /var/run/kubernetes
 
-  mkdir containerd
-  tar -xvf "containerd-${CONTAINERD_VERSION}-linux-amd64.tar.gz" -C containerd
   mkdir crictl-dir
   tar -xvf "crictl-v${CRICTL_VERSION}-linux-amd64.tar.gz" -C crictl-dir
   mv crictl-dir/crictl .
-  mv runc.amd64 runc
   sudo tar -xvf "cni-plugins-linux-amd64-v${CNI_PLUGINS_VERSION}.tgz" -C /opt/cni/bin/
-  chmod +x crictl kubectl kube-proxy kubelet runc
-  sudo mv crictl kubectl kube-proxy kubelet runc /usr/local/bin/
-  sudo mv containerd/bin/* /bin/
+  chmod +x crictl kubectl kube-proxy kubelet
+  sudo mv crictl kubectl kube-proxy kubelet /usr/local/bin/
 fi
 
 if [[ ! -f /etc/containerd/config.toml ]]; then
@@ -60,28 +58,6 @@ state = "/run/containerd"
   [plugins."io.containerd.runtime.v1.linux"]
     runtime = "runc"
     runtime_root = ""
-EOF
-
-  cat <<EOF | sudo tee /etc/systemd/system/containerd.service
-[Unit]
-Description=containerd container runtime
-Documentation=https://containerd.io
-After=network.target
-
-[Service]
-ExecStartPre=/sbin/modprobe overlay
-ExecStart=/bin/containerd
-Restart=always
-RestartSec=5
-Delegate=yes
-KillMode=process
-OOMScoreAdjust=-999
-LimitNOFILE=1048576
-LimitNPROC=infinity
-LimitCORE=infinity
-
-[Install]
-WantedBy=multi-user.target
 EOF
 fi
 
@@ -105,8 +81,8 @@ if [[ ! -f /var/lib/kubelet/kubelet-config.yaml || ! -f /var/lib/kubelet/kubecon
 }
 EOF
 
-  sudo mv "${HOSTNAME}"-key.pem "${HOSTNAME}".pem /var/lib/kubelet/
-  sudo mv "${HOSTNAME}".kubeconfig /var/lib/kubelet/kubeconfig
+  sudo mv "${HOSTNAME#lima-}"-key.pem "${HOSTNAME#lima-}".pem /var/lib/kubelet/
+  sudo mv "${HOSTNAME#lima-}".kubeconfig /var/lib/kubelet/kubeconfig
   sudo mv ca.pem /var/lib/kubernetes/
 
   cat <<EOF | sudo tee /var/lib/kubelet/kubelet-config.yaml
@@ -126,8 +102,8 @@ clusterDNS:
   - "${DNS_CLUSTER_IP}"
 resolvConf: "/run/systemd/resolve/resolv.conf"
 runtimeRequestTimeout: "15m"
-tlsCertFile: "/var/lib/kubelet/${HOSTNAME}.pem"
-tlsPrivateKeyFile: "/var/lib/kubelet/${HOSTNAME}-key.pem"
+tlsCertFile: "/var/lib/kubelet/${HOSTNAME#lima-}.pem"
+tlsPrivateKeyFile: "/var/lib/kubelet/${HOSTNAME#lima-}-key.pem"
 registerNode: true
 EOF
 
@@ -195,12 +171,12 @@ done
 function get_node_status() {
   kubectl get nodes \
     --kubeconfig /var/lib/kubelet/kubeconfig | \
-    grep "${HOSTNAME}" | awk '{ print $2 }'
+    grep "${HOSTNAME#lima-}" | awk '{ print $2 }'
 }
 
 counter=0
 
 until [ $counter -eq 5 ] || [[ "$(get_node_status)" != 'Ready' ]]; do
-  echo "Node ${HOSTNAME} is NOT ready, will sleep for ${counter} seconds and check again"
+  echo "Node ${HOSTNAME#lima-} is NOT ready, will sleep for ${counter} seconds and check again"
   sleep $(( counter++ ))
 done

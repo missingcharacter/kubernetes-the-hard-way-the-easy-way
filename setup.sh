@@ -13,7 +13,7 @@ strictMode
 function check_dependencies() {
   declare -a DEPS=(
     'git'
-    'multipass'
+    'limactl'
     'cfssl'
     'cfssljson'
     'kubectl'
@@ -36,8 +36,6 @@ check_dependencies
 export \
   KUBERNETES_VERSION='1.33.2' \
   ETCD_VERSION='3.6.1' \
-  CONTAINERD_VERSION='2.1.3' \
-  RUNC_VERSION='1.3.0' \
   CRICTL_VERSION='1.33.0' \
   CNI_PLUGINS_VERSION='1.7.1' \
   COREDNS_CHART_VERSION='1.43.0' \
@@ -55,10 +53,11 @@ KUBE_API_CLUSTER_IP="$(ipcalc "${SERVICE_CLUSTER_IP_RANGE}" | grep 'HostMin' | a
 # - Service IP range: 10.32.0.0/24
 # - Node Port range: 30000-32767
 
-msg_info 'Creating multipass instances'
+msg_info 'Creating lima instances'
 
 for i in 'controller-k8s' 'worker-1-k8s' 'worker-2-k8s' ; do
-  "${MULTIPASS_CMDS[@]}" launch --name "${i}" --cpus 2 --memory 2048M --disk 11G "${UBUNTU_VERSION}"
+  limactl create -y --name="${i}" --cpus=2 --memory=2 --disk=11 template://ubuntu-"${UBUNTU_VERSION}"
+  limactl start "${i}" --network=lima:user-v2
 done
 
 msg_info 'Creating and distributing certificates'
@@ -84,16 +83,16 @@ cd - || exit
 
 msg_info 'Configuring the Kubernetes control plane'
 
-"${MULTIPASS_CMDS[@]}" exec controller-k8s -- bash generate-etcd-systemd.sh "${ETCD_VERSION}"
-"${MULTIPASS_CMDS[@]}" exec controller-k8s -- bash generate-kubernetes-control-plane-systemd.sh "${SERVICE_CLUSTER_IP_RANGE}" "${SERVICE_NODE_PORT_RANGE}" "${CLUSTER_CIDR}" "${KUBE_API_CLUSTER_IP}"
-"${MULTIPASS_CMDS[@]}" exec controller-k8s -- bash generate-kubelet-rbac-authorization.sh
+limactl shell controller-k8s bash "${LIMACTL_HOME}"/generate-etcd-systemd.sh "${ETCD_VERSION}"
+limactl shell controller-k8s bash "${LIMACTL_HOME}"/generate-kubernetes-control-plane-systemd.sh "${SERVICE_CLUSTER_IP_RANGE}" "${SERVICE_NODE_PORT_RANGE}" "${CLUSTER_CIDR}" "${KUBE_API_CLUSTER_IP}"
+limactl shell controller-k8s bash "${LIMACTL_HOME}"/generate-kubelet-rbac-authorization.sh
 
 
 msg_info 'Configuring the Kubernetes workers'
 
 for i in 'worker-1-k8s' 'worker-2-k8s'; do
   msg_info "Provisioning ${i}"
-  "${MULTIPASS_CMDS[@]}" exec "${i}" -- bash bootstrap-workers.sh "${CONTAINERD_VERSION}" "${CNI_PLUGINS_VERSION}" "${DNS_CLUSTER_IP}" "${CRICTL_VERSION}"
+  limactl shell "${i}" bash "${LIMACTL_HOME}"/bootstrap-workers.sh  "${CNI_PLUGINS_VERSION}" "${DNS_CLUSTER_IP}" "${CRICTL_VERSION}"
 done
 
 msg_info 'Setting up kubectl to use your newly created cluster'
