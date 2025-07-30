@@ -40,6 +40,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - uses: lima-vm/lima-actions/setup@v1
+        id: lima-actions-setup
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/lima
+            ${{ steps.set-up-homebrew.outputs.gems-path }}
+          key: lima-${{ steps.lima-actions-setup.outputs.version }}-${{ runner.os }}-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
+          restore-keys: ${{ runner.os }}-rubygems-
       - uses: azure/setup-helm@v4.3.0
         id: install_helm
       - uses: azure/setup-kubectl@v4
@@ -48,25 +60,12 @@ jobs:
         shell: bash
         run: |
           bash -x ./lib/github_actions-install_tools.sh
-          sudo apt update
-          sudo apt install -y snapd ipcalc
-          sudo snap install multipass
+          brew install ipcalc cfssl
           hash -r
-      - name: Wait for multipass to be up
-        shell: bash
-        run: |
-          until sudo multipass list; do
-            echo 'multipass is not running, will check again in 2 seconds'
-            sleep 2
-          done
-          until sudo multipass launch 24.04 --name test; do
-            echo 'multipass daemon is not ready, will check again in 2 seconds'
-            sleep 2
-          done
       - name: Confirm depdencies are available in PATH
         shell: bash
         run: |
-          sudo multipass list
+          limactl --version
           cfssl version
           cfssljson --version
           ipcalc --version

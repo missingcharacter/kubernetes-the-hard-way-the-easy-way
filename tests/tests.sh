@@ -12,7 +12,7 @@ kubectl create secret \
   generic kubernetes-the-hard-way --from-literal="mykey=mydata"
 
 msg_info "Checking secret is encrypted"
-ETCD_OUTPUT="$("${MULTIPASS_CMDS[@]}" exec controller-k8s -- sudo ETCDCTL_API=3 etcdctl get \
+ETCD_OUTPUT="$(limactl shell controller-k8s sudo etcdctl get \
      --endpoints=https://127.0.0.1:2379 --cacert=/etc/etcd/ca.pem \
      --cert=/etc/etcd/kubernetes.pem --key=/etc/etcd/kubernetes-key.pem \
      /registry/secrets/default/kubernetes-the-hard-way | hexdump -C)"
@@ -27,12 +27,11 @@ until grep -q 'true' <(grep 'nginx' <(kubectl get pods -o json -A | jq -r '.item
   sleep 2
 done
 
-msg_info "Exposing nginx"
-kubectl expose deployment nginx --port 80 --type NodePort
-NODE_PORT=$(kubectl get svc nginx \
-  --output=jsonpath='{range .spec.ports[0]}{.nodePort}')
-WORKER_IP=$("${MULTIPASS_CMDS[@]}" info 'worker-1-k8s' | grep 'IPv4' | \
-  awk '{ print $2 }')
+msg_info "kubectl port-forwarding nginx"
+POD_NAME="$(kubectl get pods -n default -l app=nginx \
+    -o jsonpath="{.items[0].metadata.name}")"
+kubectl port-forward pod/"${POD_NAME}" 8080:80 &
 
 msg_info "Can I talk to nginx?"
-curl -I "http://${WORKER_IP}:${NODE_PORT}"
+sleep 2
+curl -I "http://localhost:8080"

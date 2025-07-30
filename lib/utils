@@ -26,14 +26,6 @@ function msg_fatal() {
   exit 1
 }
 
-declare -a MULTIPASS_CMDS=('multipass')
-
-if [[ "${GITHUB_ACTIONS}" = "true" ]]; then
-  MULTIPASS_CMDS=('sudo' 'multipass')
-fi
-
-export MULTIPASS_CMDS
-
 function get_operatingsystem() {
   local kernel_name
   kernel_name="$(uname)"
@@ -97,8 +89,11 @@ function join_by {
   echo "${*}"
 }
 
+LIMACTL_HOME="${HOME}.linux"
+export LIMACTL_HOME
+
 function transfer_file() {
-  local FILE="${1}"
-  local INSTANCE=${2}
-  "${MULTIPASS_CMDS[@]}" transfer -v "${FILE}" "${INSTANCE}":/home/ubuntu/"${FILE##*/}"
+  local file="${1}"
+  local instance=${2}
+  limactl copy -v "${file}" "${instance}":"${LIMACTL_HOME}/${file##*/}"
 }

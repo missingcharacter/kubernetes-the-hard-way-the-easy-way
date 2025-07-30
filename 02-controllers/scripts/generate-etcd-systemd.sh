@@ -4,9 +4,12 @@ IFS=$'\n\t'
 
 ETCD_VERSION="${1}"
 
+# Changing directory to ${HOME}
+cd || exit 1
+
 if ! grep 'worker-1-k8s' /etc/hosts &> /dev/null; then
   # shellcheck disable=SC2002
-  cat multipass-hosts | sudo tee -a /etc/hosts
+  cat limactl-hosts | sudo tee -a /etc/hosts
 fi
 
 if [[ ! -x $(command -v etcd) || ! -x $(command -v etcdctl) ]]; then
@@ -77,7 +80,7 @@ sudo systemctl enable --now etcd
 
 echo 'Listing etcd members'
 
-sudo ETCDCTL_API=3 etcdctl member list \
+sudo etcdctl member list \
   --endpoints=https://127.0.0.1:2379 \
   --cacert=/etc/etcd/ca.pem \
   --cert=/etc/etcd/kubernetes.pem \

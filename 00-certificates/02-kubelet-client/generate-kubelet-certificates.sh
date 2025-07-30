@@ -11,10 +11,10 @@ COUNTRY="${1:-US}"
 CITY="${2:-Austin}"
 STATE="${3:-Texas}"
 
-for instance in $("${MULTIPASS_CMDS[@]}" list | grep 'worker' | awk '{ print $1 }'); do
+for instance in $(limactl list -q); do
   cat > "${instance}"-csr.json <<EOF
 {
-  "CN": "system:node:${instance}",
+  "CN": "system:node:lima-${instance}",
   "key": {
     "algo": "rsa",
     "size": 2048
@@ -31,13 +31,13 @@ for instance in $("${MULTIPASS_CMDS[@]}" list | grep 'worker' | awk '{ print $1 
 }
 EOF
 
-  INTERNAL_IP="$("${MULTIPASS_CMDS[@]}" info "${instance}" | grep 'IPv4' | awk '{ print $2 }')"
+  INTERNAL_IP="$(limactl shell "${instance}" hostname -I | xargs)"
 
   cfssl gencert \
     -ca=../00-Certificate-Authority/ca.pem \
     -ca-key=../00-Certificate-Authority/ca-key.pem \
     -config=../00-Certificate-Authority/ca-config.json \
-    -hostname="${instance}","${INTERNAL_IP}" \
+    -hostname=lima-"${instance}","${INTERNAL_IP}",lima-"${instance}".internal \
     -profile=kubernetes \
     "${instance}"-csr.json | cfssljson -bare "${instance}"
 done

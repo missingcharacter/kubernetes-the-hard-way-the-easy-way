@@ -2,6 +2,28 @@
 set -euo pipefail
 IFS=$'\n\t'
 
+function retry_command() {
+  # Source: https://github.com/aws-quickstart/quickstart-linux-utilities/blob/master/quickstart-cfn-tools.source#L413-L433
+  # $1 = NumberOfRetries $2 = Command
+  # retry_command 10 some_command.sh
+  # Command will retry with linear back-off
+  local -r __tries="${1}"; shift
+  declare -a __run=("${@}")
+  local -i __backoff_delay=2
+  local __current_try=0
+  until "${__run[@]}"
+    do
+      if (( __current_try == __tries ))
+      then
+        echo "Tried ${__current_try} times and failed!"
+        return 1
+      else
+        echo "Retrying ...."
+        sleep $(((__backoff_delay++) + (__current_try++)))
+      fi
+    done
+}
+
 function get_os() {
   local kernel_name
   kernel_name="$(uname)"
@@ -48,15 +70,6 @@ function get_latest_github_tag() {
 
 OS="$(get_os)"
 ARCH="$(get_arch)"
-
-echo "Install cfssl"
-CFSSL_VERSION="$(get_latest_github_tag 'cloudflare' 'cfssl' 'true')"
-curl -fSL --remote-name-all --ssl-reqd \
-  "https://github.com/cloudflare/cfssl/releases/download/v${CFSSL_VERSION}/cfssljson_${CFSSL_VERSION}_${OS}_${ARCH}" \
-  "https://github.com/cloudflare/cfssl/releases/download/v${CFSSL_VERSION}/cfssl_${CFSSL_VERSION}_${OS}_${ARCH}"
-chmod +x "cfssljson_${CFSSL_VERSION}_${OS}_${ARCH}" "cfssl_${CFSSL_VERSION}_${OS}_${ARCH}"
-mv "cfssljson_${CFSSL_VERSION}_${OS}_${ARCH}" /usr/local/bin/cfssljson
-mv "cfssl_${CFSSL_VERSION}_${OS}_${ARCH}" /usr/local/bin/cfssl
 
 echo "Install shellcheck"
 SHELLCHECK_VERSION="$(get_latest_github_tag 'koalaman' 'shellcheck' 'true')"

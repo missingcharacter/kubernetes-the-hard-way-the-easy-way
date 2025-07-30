@@ -7,7 +7,7 @@ GITROOT=$(git rev-parse --show-toplevel)
 . "${GITROOT}"/lib/utils
 strictMode
 
-for instance in $("${MULTIPASS_CMDS[@]}" list | grep 'controller' | awk '{ print $1 }'); do
+for instance in $(limactl list -q | grep 'controller'); do
   for file in ./*/*.sh; do
     transfer_file "${file}" "${instance}"
   done
