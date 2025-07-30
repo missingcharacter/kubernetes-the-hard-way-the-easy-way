@@ -33,4 +33,5 @@ POD_NAME="$(kubectl get pods -n default -l app=nginx \
 kubectl port-forward pod/"${POD_NAME}" 8080:80 &
 
 msg_info "Can I talk to nginx?"
+sleep 2
 curl -I "http://localhost:8080"
