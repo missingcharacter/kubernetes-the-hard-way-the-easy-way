@@ -39,20 +39,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - uses: lima-vm/lima-actions/setup@v1
         id: lima-actions-setup
       - name: Set up Homebrew
         id: set-up-homebrew
         uses: Homebrew/actions/setup-homebrew@main
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: |
             ~/.cache/lima
             ${{ steps.set-up-homebrew.outputs.gems-path }}
           key: lima-${{ steps.lima-actions-setup.outputs.version }}-${{ runner.os }}-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
           restore-keys: ${{ runner.os }}-rubygems-
-      - uses: azure/setup-helm@v4.3.0
+      - uses: azure/setup-helm@v5.0.0
         id: install_helm
       - uses: azure/setup-kubectl@v4
         id: install_kubectl
