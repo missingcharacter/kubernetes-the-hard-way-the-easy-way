@@ -54,7 +54,7 @@ jobs:
           restore-keys: ${{ runner.os }}-rubygems-
       - uses: azure/setup-helm@v5.0.0
         id: install_helm
-      - uses: azure/setup-kubectl@v4
+      - uses: azure/setup-kubectl@v5
         id: install_kubectl
       - name: Install project dependencies
         shell: bash
