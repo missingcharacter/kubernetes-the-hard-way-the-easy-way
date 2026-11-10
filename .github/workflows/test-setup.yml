@@ -52,7 +52,7 @@ jobs:
             ${{ steps.set-up-homebrew.outputs.gems-path }}
           key: lima-${{ steps.lima-actions-setup.outputs.version }}-${{ runner.os }}-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
           restore-keys: ${{ runner.os }}-rubygems-
-      - uses: azure/setup-helm@v5.0.1
+      - uses: azure/setup-helm@v5.1.0
         id: install_helm
       - uses: azure/setup-kubectl@v5
         id: install_kubectl
